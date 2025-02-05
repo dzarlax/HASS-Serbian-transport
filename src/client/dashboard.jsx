@@ -138,20 +138,19 @@ class CityDashboardPanel extends HTMLElement {
   }
 }
 
-if (!customElements.get('city-dashboard-panel')) {
+customElements.whenDefined('home-assistant').then(() => {
   customElements.define('city-dashboard-panel', CityDashboardPanel);
-}
-
-const registerPanel = () => {
-  const ha = customElements.get('home-assistant');
-  if (ha) {
-    ha.registerPanel("beograd_transport", {
+  
+  const homeAssistant = customElements.get('home-assistant');
+  homeAssistant.registerPanel(
+    "beograd_transport",
+    {
       name: "Belgrade transport",
       icon: "mdi:bus",
       url_path: "beograd_transport",
       component_name: "city-dashboard-panel"
-    });
-  }
-};
+    }
+  );
+});
 
 registerPanel();
