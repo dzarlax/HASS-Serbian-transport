@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createRoot } from 'react-dom/client';
 import { Bus } from 'lucide-react';
+import { getHomeAssistantConfig } from './utils/homeAssistant';
 
 const SERVER_IP = "https://transport-api.dzarlax.dev";
 
@@ -76,101 +78,80 @@ const BusStation = React.memo(({ name, distance, stopId, vehicles = [], city }) 
 });
 
 const HaTransportCard = ({ config }) => {
-  const [stops, setStops] = useState([]);
+  const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchStops = useCallback(async () => {
+  const fetchStations = useCallback(async () => {
     try {
-      const cities = ['bg', 'ns', 'nis'];
-      const allStops = [];
-      
-      await Promise.all(cities.map(async city => {
-        const params = new URLSearchParams({
-          lat: config?.latitude || 44.8178131,
-          lon: config?.longitude || 20.4568974,
-          rad: config?.radius || 500,
-        });
-
-        const response = await fetch(
-          `${SERVER_IP}/api/stations/${city}/all?${params.toString()}`
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch stations for ${city.toUpperCase()}`);
-        }
-
-        const data = await response.json();
-        allStops.push(...data.map(stop => ({
-          ...stop,
-          distance: `${Math.round(stop.distance)}m`,
-          city: city.toUpperCase(),
-        })));
-      }));
-
-      setStops(allStops.sort((a, b) => 
-        parseFloat(a.distance) - parseFloat(b.distance)
-      ));
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching stops:', error);
-      setError(error.message);
+      const { latitude, longitude } = config;
+      const response = await fetch(
+        `${SERVER_IP}/api/v1/nearest?lat=${latitude}&lon=${longitude}`
+      );
+      const data = await response.json();
+      setStations(data);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
     }
   }, [config]);
 
   useEffect(() => {
-    fetchStops();
-    const interval = setInterval(fetchStops, (config?.update_interval || 60) * 1000);
+    fetchStations();
+    const interval = setInterval(fetchStations, 30000);
     return () => clearInterval(interval);
-  }, [fetchStops]);
+  }, [fetchStations]);
 
-  if (loading) {
-    return (
-      <div style={{ padding: '16px', color: 'var(--primary-text-color)' }}>
-        Загрузка...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={{ 
-        padding: '16px', 
-        color: 'var(--error-color, #db4437)',
-        backgroundColor: 'var(--error-background, rgba(219, 68, 55, 0.1))',
-        borderRadius: '4px',
-        margin: '8px 0'
-      }}>
-        Ошибка: {error}
-      </div>
-    );
-  }
-
-  if (stops.length === 0) {
-    return (
-      <div style={{ 
-        padding: '16px',
-        color: 'var(--secondary-text-color)',
-        textAlign: 'center'
-      }}>
-        Остановки не найдены в радиусе {config?.radius || 500}м
-      </div>
-    );
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '16px',
-      padding: '8px'
-    }}>
-      {stops.map((stop) => (
-        <BusStation key={`${stop.stopId}-${stop.city}`} {...stop} />
+    <div className="transport-card">
+      {stations.map((station) => (
+        <BusStation key={station.id} {...station} />
       ))}
     </div>
   );
 };
 
-export default HaTransportCard; 
+class CityDashboardPanel extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this.config = null;
+  }
+
+  async connectedCallback() {
+    this.config = await getHomeAssistantConfig();
+    const container = document.createElement('div');
+    container.style.cssText = `
+      height: 100%;
+      padding: 16px;
+      background: var(--primary-background-color);
+      color: var(--primary-text-color);
+    `;
+    this.shadowRoot.appendChild(container);
+    const root = createRoot(container);
+    root.render(<HaTransportCard config={this.config} />);
+  }
+}
+
+if (!customElements.get('city-dashboard-panel')) {
+  customElements.define('city-dashboard-panel', CityDashboardPanel);
+}
+
+const registerPanel = () => {
+  const ha = customElements.get('home-assistant');
+  if (ha) {
+    ha.registerPanel("beograd_transport", {
+      name: "Belgrade transport",
+      icon: "mdi:bus",
+      url_path: "beograd_transport",
+      component_name: "city-dashboard-panel"
+    });
+  }
+};
+
+registerPanel();

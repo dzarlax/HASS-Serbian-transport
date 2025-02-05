@@ -14,7 +14,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-          'dashboard': 'src/client/HAdashboard.js'  // Input stays the same
+          'dashboard': 'src/client/dashboard.jsx'  // Input stays the same
       },
       output: {
           entryFileNames: 'dashboard.js',  // Changed output filename
