@@ -36,7 +36,7 @@ jobs:
       - name: Read current version
         id: get_version
         run: |
-          CURRENT_VERSION=$(jq -r .version custom_components/city_dashboard/manifest.json)
+          CURRENT_VERSION=$(jq -r .version custom_components/beograd_transport/manifest.json)
           IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
           NEW_VERSION="$major.$minor.$((patch + 1))"
           echo "New version: $NEW_VERSION"
@@ -44,8 +44,8 @@ jobs:
 
       - name: Update manifest.json
         run: |
-          jq --arg version "$version" '.version = $version' custom_components/city_dashboard/manifest.json > manifest.tmp.json
-          mv manifest.tmp.json custom_components/city_dashboard/manifest.json
+          jq --arg version "$version" '.version = $version' custom_components/beograd_transport/manifest.json > manifest.tmp.json
+          mv manifest.tmp.json custom_components/beograd_transport/manifest.json
 
       - name: Install dependencies
         run: npm ci
@@ -54,40 +54,40 @@ jobs:
         run: |
           npm run build:hacs
           # Создаем www директорию и очищаем её
-          mkdir -p custom_components/city_dashboard/www/assets
-          rm -rf custom_components/city_dashboard/www/*
+          mkdir -p custom_components/beograd_transport/www/assets
+          rm -rf custom_components/beograd_transport/www/*
           # Копируем собранные файлы
-          cp -r dist/* custom_components/city_dashboard/www/
+          cp -r dist/* custom_components/beograd_transport/www/
           # Копируем иконку
-          cp dash.svg custom_components/city_dashboard/www/
+          cp dash.svg custom_components/beograd_transport/www/
           # Проверяем содержимое
           echo "Contents of www directory:"
-          ls -la custom_components/city_dashboard/www/
+          ls -la custom_components/beograd_transport/www/
           echo "Contents of assets directory:"
-          ls -la custom_components/city_dashboard/www/assets/ || true
+          ls -la custom_components/beograd_transport/www/assets/ || true
 
       - name: Prepare HACS package
         run: |
           # Start fresh with correct structure
           rm -rf hacs-release
-          mkdir -p hacs-release/custom_components/city_dashboard
+          mkdir -p hacs-release/custom_components/beograd_transport
           
           # Copy Python files directly to correct location
-          cp custom_components/city_dashboard/__init__.py hacs-release/custom_components/city_dashboard/
-          cp custom_components/city_dashboard/manifest.json hacs-release/custom_components/city_dashboard/
-          cp custom_components/city_dashboard/config_flow.py hacs-release/custom_components/city_dashboard/
-          cp custom_components/city_dashboard/const.py hacs-release/custom_components/city_dashboard/
+          cp custom_components/beograd_transport/__init__.py hacs-release/custom_components/beograd_transport/
+          cp custom_components/beograd_transport/manifest.json hacs-release/custom_components/beograd_transport/
+          cp custom_components/beograd_transport/config_flow.py hacs-release/custom_components/beograd_transport/
+          cp custom_components/beograd_transport/const.py hacs-release/custom_components/beograd_transport/
           
           # Copy www directory with built frontend
-          cp -r custom_components/city_dashboard/www hacs-release/custom_components/city_dashboard/
+          cp -r custom_components/beograd_transport/www hacs-release/custom_components/beograd_transport/
           
           # Copy translations if they exist
-          if [ -d "custom_components/city_dashboard/translations" ]; then
-            cp -r custom_components/city_dashboard/translations hacs-release/custom_components/city_dashboard/
+          if [ -d "custom_components/beograd_transport/translations" ]; then
+            cp -r custom_components/beograd_transport/translations hacs-release/custom_components/beograd_transport/
           fi
           
           # Create zip from the content of hacs-release directory
-          cd hacs-release/custom_components/city_dashboard
+          cd hacs-release/custom_components/beograd_transport
           zip -r ../beograd_transport.zip * || echo "Zip creation failed"
           cd ..
           ls -la beograd_transport.zip || echo "Zip file not found"
