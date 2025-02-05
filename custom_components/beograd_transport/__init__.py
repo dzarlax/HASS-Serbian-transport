@@ -28,19 +28,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     www_path = hass.config.path("www")
     www_community = hass.config.path("www", "community")
     www_component = hass.config.path("www", "community", DOMAIN)
+    assets_path = os.path.join(www_component, "assets")
     
-    for path in [www_path, www_community, www_component]:
+    for path in [www_path, www_community, www_component, assets_path]:
         if not os.path.exists(path):
             os.makedirs(path)
     
     # Copy component files
     local_www = os.path.join(os.path.dirname(__file__), "www")
     if os.path.exists(local_www):
+        # Copy root files
         for file in os.listdir(local_www):
             src = os.path.join(local_www, file)
-            dst = os.path.join(www_component, file)
             if os.path.isfile(src):
+                dst = os.path.join(www_component, file)
                 shutil.copy2(src, dst)
+        
+        # Copy assets directory
+        local_assets = os.path.join(local_www, "assets")
+        if os.path.exists(local_assets):
+            for file in os.listdir(local_assets):
+                src = os.path.join(local_assets, file)
+                if os.path.isfile(src):
+                    dst = os.path.join(assets_path, file)
+                    shutil.copy2(src, dst)
     
     if entry.options.get("add_sidebar", True):
         _LOGGER.debug("Registering panel for Serbian Transport")
