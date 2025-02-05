@@ -22,7 +22,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.http.async_register_static_paths([
         StaticPathConfig(
             url_path=f"/local/community/{DOMAIN}/transport-card.js",
-            file_path=hass.config.path(f"www/community/{DOMAIN}/transport-card.js"),
+            path=hass.config.path(f"www/community/{DOMAIN}/transport-card.js"),
             cache_headers=True
         )
     ])
