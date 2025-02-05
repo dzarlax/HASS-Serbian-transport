@@ -1,58 +1,101 @@
-"""Config flow for Transport Stations Integration."""
-import logging
-import voluptuous as vol
+"""Config flow for Serbian Transport integration."""
+from __future__ import annotations
 
-from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
+import voluptuous as vol
+from typing import Any
+
+from homeassistant.config_entries import ConfigFlow, ConfigEntry, OptionsFlow
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
+from homeassistant.core import callback
+from homeassistant.data_entry_flow import FlowResult
 import homeassistant.helpers.config_validation as cv
 
-# Импортируйте DOMAIN из вашего __init__.py (или отдельно из const.py)
 from . import DOMAIN
 
-_LOGGER = logging.getLogger(__name__)
+class SerbianTransportConfigFlow(ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for Serbian Transport."""
 
-class TransportStationsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Example Config Flow для транспортных остановок."""
+    VERSION = 1
 
-    VERSION = 1  # Версия схемы конфигурации
-
-    async def async_step_user(self, user_input=None):
-        """Первый (и единственный) шаг настройки через UI."""
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle the initial step."""
         errors = {}
 
         if user_input is not None:
-            # При желании можно добавить валидацию, например, на корректность координат
-            latitude = user_input[CONF_LATITUDE]
-            longitude = user_input[CONF_LONGITUDE]
-            search_rad = user_input["search_rad"]
-
-            # Проверим, не установлена ли уже интеграция с такими же параметрами
-            unique_id = f"{latitude}_{longitude}_{search_rad}"
-            await self.async_set_unique_id(unique_id)
-            self._abort_if_unique_id_configured()
+            # Use location from HA config if not specified
+            latitude = user_input.get(CONF_LATITUDE, self.hass.config.latitude)
+            longitude = user_input.get(CONF_LONGITUDE, self.hass.config.longitude)
+            search_rad = user_input.get("search_rad", 1000)
 
             return self.async_create_entry(
-                title="Transport Stations",
+                title="Serbian Transport",
                 data={
                     CONF_LATITUDE: latitude,
                     CONF_LONGITUDE: longitude,
-                    "search_rad": search_rad
+                    "search_rad": search_rad,
                 }
             )
 
-        # Значения по умолчанию возьмём из глобальных настроек HA, если есть
-        default_lat = self.hass.config.latitude or 44.7866
-        default_lon = self.hass.config.longitude or 20.4489
-
-        data_schema = vol.Schema({
-            vol.Required(CONF_LATITUDE, default=default_lat): cv.latitude,
-            vol.Required(CONF_LONGITUDE, default=default_lon): cv.longitude,
-            vol.Required("search_rad", default=100): vol.All(vol.Coerce(int), vol.Range(min=100, max=20000))
-        })
-
         return self.async_show_form(
             step_id="user",
-            data_schema=data_schema,
-            errors=errors
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_LATITUDE,
+                        default=self.hass.config.latitude
+                    ): cv.latitude,
+                    vol.Required(
+                        CONF_LONGITUDE,
+                        default=self.hass.config.longitude
+                    ): cv.longitude,
+                    vol.Required(
+                        "search_rad",
+                        default=1000
+                    ): vol.All(
+                        vol.Coerce(int),
+                        vol.Range(min=100, max=20000)
+                    ),
+                }
+            ),
+            errors=errors,
+        )
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: ConfigEntry,
+    ) -> SerbianTransportOptionsFlow:
+        """Get the options flow for this handler."""
+        return SerbianTransportOptionsFlow(config_entry)
+
+
+class SerbianTransportOptionsFlow(OptionsFlow):
+    """Handle options."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Manage the options."""
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        "search_rad",
+                        default=self.config_entry.options.get("search_rad", 1000)
+                    ): vol.All(
+                        vol.Coerce(int),
+                        vol.Range(min=100, max=20000)
+                    ),
+                }
+            )
         )

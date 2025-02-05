@@ -1,10 +1,10 @@
 {
     "domain": "serbian_transport",
     "name": "Serbian Transport",
+    "config_flow": true,
     "documentation": "https://github.com/dzarlax/HASS-Serbian-transport",
     "issue_tracker": "https://github.com/dzarlax/HASS-Serbian-transport/issues",
     "dependencies": ["frontend", "http"],
-    "config_flow": true,
     "codeowners": ["@dzarlax"],
     "requirements": [],
     "version": "1.0.0",
