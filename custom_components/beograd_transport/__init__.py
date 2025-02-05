@@ -62,12 +62,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             "custom",
             sidebar_title=NAME,
             sidebar_icon="mdi:bus",
-            frontend_url_path="beograd_transport",
+            frontend_url_path=DOMAIN,
             require_admin=False,
             config={
                 "_panel_custom": {
-                    "name": "beograd_transport",
-                    "module_url": "/local/community/beograd_transport/dashboard.js",
+                    "name": DOMAIN,
+                    "module_url": f"/local/community/{DOMAIN}/HAdashboard.js",
                     "embed_iframe": False,
                     "trust_external": True
                 }

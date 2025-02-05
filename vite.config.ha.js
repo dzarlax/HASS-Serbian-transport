@@ -7,7 +7,7 @@ const base = isHACS ? '/local/community/beograd_transport/' : '/';
 
 export default defineConfig({
   ...baseConfig,
-  base: base,
+  base: '/local/community/beograd_transport/',
   plugins: [react()],
   build: {
     outDir: 'dist',

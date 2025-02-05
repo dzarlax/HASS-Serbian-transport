@@ -1,20 +1,19 @@
-// Регистрируем панель
 const registerPanel = () => {
   const ha = customElements.get('home-assistant');
   if (ha) {
     ha.registerPanel(
-      "city-dashboard",
+      "beograd_transport",
       {
-        name: "City Dashboard",
+        name: "Belgrade transport",
         icon: "mdi:bus",
-        url_path: "city-dashboard",
-        component_name: "city-dashboard-panel"
+        url_path: "beograd_transport",
+        component_name: "city-dashboard-panel"  // Match the custom element name
       }
     );
   }
 };
 
-// Импортируем компонент панели
+// Import panel component
 import('./ha-panel.jsx')
   .then(() => {
     console.log('Panel component loaded');
@@ -22,4 +21,4 @@ import('./ha-panel.jsx')
   })
   .catch(err => {
     console.error('Failed to load panel:', err);
-  }); 
+  });
