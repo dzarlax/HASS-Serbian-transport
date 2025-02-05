@@ -1,4 +1,4 @@
-"""The City Dashboard integration."""
+"""The Serbian Transport integration."""
 import os
 import shutil
 import logging
@@ -14,15 +14,15 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS: list[str] = []
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up the City Dashboard component."""
+    """Set up the Serbian Transport component."""
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up City Dashboard from a config entry."""
+    """Set up Serbian Transport from a config entry."""
     hass.data.setdefault(DOMAIN, {})
     
     if entry.options.get("add_sidebar", True):
-        _LOGGER.debug("Registering panel for City Dashboard")
+        _LOGGER.debug("Registering panel for Serbian Transport")
         frontend.async_remove_panel(hass, "beograd_transport")
         
         frontend.async_register_built_in_panel(

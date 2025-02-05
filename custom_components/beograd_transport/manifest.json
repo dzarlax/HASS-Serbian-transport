@@ -1,6 +1,6 @@
 {
   "domain": "beograd_transport",
-  "name": "Beograd Transport",
+  "name": "Serbian Transport",
   "version": "0.1.6",
   "config_flow": true,
   "documentation": "https://github.com/dzarlax/hass-beograd-transport",
