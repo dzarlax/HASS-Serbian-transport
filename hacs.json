@@ -2,7 +2,7 @@
     "name": "Serbian Transport",
     "render_readme": true,
     "content_in_root": false,
-    "domains": ["beograd_transport"],
+    "domain": ["beograd_transport"],
     "homeassistant": "2023.8.0",
     "zip_release": true,
     "filename": "beograd_transport.zip"
