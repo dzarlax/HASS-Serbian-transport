@@ -97,7 +97,7 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git add custom_components/city_dashboard/manifest.json
+          git add custom_components/beograd_transport/manifest.json
           git commit -m "Bump version to ${{ env.version }}"
           git push origin main
 
@@ -110,4 +110,4 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            city_dashboard.zip
+            beograd_transport.zip
