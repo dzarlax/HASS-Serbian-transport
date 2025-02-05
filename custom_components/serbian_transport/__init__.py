@@ -17,11 +17,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
     # Регистрация статического пути
-    hass.http.register_static_path(
-        f"/local/community/{DOMAIN}/transport-card.js",
-        hass.config.path(f"www/community/{DOMAIN}/transport-card.js"),
-        cache_headers=True
-    )
+    await hass.http.async_register_static_paths([StaticPathConfig("/local/community/serbian_transport/transport-card.js", "/config/www/community/serbian_transport/transport-card.js", True)])
 
     # Ручная регистрация ресурса в Lovelace
     if "lovelace_resources" in hass.data:
