@@ -2,6 +2,8 @@
 import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.components.http import StaticPathConfig
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -17,7 +19,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
     # Регистрация статического пути
-    await hass.http.async_register_static_paths([StaticPathConfig("/local/community/serbian_transport/transport-card.js", "/config/www/community/serbian_transport/transport-card.js", True)])
+    await hass.http.async_register_static_paths([StaticPathConfig("/local/community/serbian_transport/transport-card.js", "/config/www/community/serbian_transport/transport-card.js", True)])(
+        f"/local/community/{DOMAIN}/transport-card.js",
+        hass.config.path(f"www/community/{DOMAIN}/transport-card.js"),
+        cache_headers=True
+    )
 
     # Ручная регистрация ресурса в Lovelace
     if "lovelace_resources" in hass.data:
