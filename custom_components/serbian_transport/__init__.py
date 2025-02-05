@@ -2,7 +2,6 @@
 import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.components.lovelace.resources import async_register_resource
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,15 +23,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         cache_headers=True
     )
 
-    # Регистрация ресурса в Lovelace
-    try:
-        await async_register_resource(
-            hass,
-            "module",
-            f"/local/community/{DOMAIN}/transport-card.js"
-        )
-    except Exception as e:
-        _LOGGER.error("Failed to register Lovelace resource: %s", e)
+    # Ручная регистрация ресурса в Lovelace
+    if "lovelace_resources" in hass.data:
+        resources = hass.data["lovelace_resources"]
+        resource_url = f"/local/community/{DOMAIN}/transport-card.js"
+        if not any(res["url"] == resource_url for res in resources):
+            resources.append({"type": "module", "url": resource_url})
+            _LOGGER.info("Registered Lovelace resource: %s", resource_url)
 
     # Сохранение конфигурации
     hass.data[DOMAIN][entry.entry_id] = {
