@@ -28,6 +28,6 @@ export function getLocation() {
 
 export const getServiceWorkerUrl = () => {
   return isHomeAssistant()
-    ? `${window.location.origin}/local/city_dashboard/service-worker.js`
+    ? `${window.location.origin}/local/beograd_transport/service-worker.js`
     : 'https://transport.dzarlax.dev/service-worker.js';
 };

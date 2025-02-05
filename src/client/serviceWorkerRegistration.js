@@ -1,5 +1,5 @@
 function isHomeAssistant() {
-  return window.location.pathname.includes('/local/city_dashboard/');
+  return window.location.pathname.includes('/local/beograd_transport/');
 }
 
 export function register() {

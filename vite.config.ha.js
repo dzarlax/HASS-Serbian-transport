@@ -3,7 +3,7 @@ import { baseConfig } from './vite.config.base';
 import react from '@vitejs/plugin-react';
 
 const isHACS = process.env.HACS === 'true';
-const base = isHACS ? '/local/community/city_dashboard/' : '/';
+const base = isHACS ? '/local/community/beograd_transport/' : '/';
 
 export default defineConfig({
   ...baseConfig,
