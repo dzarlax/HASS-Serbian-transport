@@ -1,42 +1,46 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Bus } from 'lucide-react';
 import { getHomeAssistantConfig } from './utils/homeAssistant';
 
-const SERVER_IP = "https://transport-api.dzarlax.dev";
+const SERVER_IP = process.env.TRANSPORT_API_URL || "https://transport-api.dzarlax.dev";
 
 const formatMinutes = (seconds) => {
   const minutes = Math.ceil(seconds / 60);
   return `${minutes}min`;
 };
 
-const BusStation = React.memo(({ name, distance, stopId, vehicles = [], city }) => {
-  const groupedVehicles = vehicles.reduce((acc, vehicle) => {
-    const directionKey = `${stopId}-${vehicle.lineNumber}-${vehicle.lineName || 'unknown'}-${vehicle.stationName || ''}`;
-    if (!acc[directionKey]) {
-      acc[directionKey] = {
-        lineNumber: vehicle.lineNumber,
-        lineName: vehicle.lineName,
-        stationName: vehicle.stationName,
-        arrivals: [],
-      };
-    }
-    acc[directionKey].arrivals.push({
-      secondsLeft: vehicle.secondsLeft,
-      stationsBetween: vehicle.stationsBetween,
-    });
-    return acc;
-  }, {});
+const BusStation = React.memo(({ name, distance, stopId, vehicles, city }) => {
+  vehicles = vehicles || [];
+  
+  const groupedVehicles = useMemo(() => {
+    return vehicles.reduce((acc, vehicle) => {
+      const directionKey = `${stopId}-${vehicle.lineNumber}-${vehicle.lineName || 'unknown'}-${vehicle.stationName || ''}`;
+      if (!acc[directionKey]) {
+        acc[directionKey] = {
+          lineNumber: vehicle.lineNumber,
+          lineName: vehicle.lineName,
+          stationName: vehicle.stationName,
+          arrivals: [],
+        };
+      }
+      acc[directionKey].arrivals.push({
+        secondsLeft: vehicle.secondsLeft,
+        stationsBetween: vehicle.stationsBetween,
+      });
+      return acc;
+    }, {});
+  }, [vehicles, stopId]);
 
   const sortedGroups = Object.values(groupedVehicles).sort(
     (a, b) => parseInt(a.lineNumber) - parseInt(b.lineNumber)
   );
 
   return (
-    <div className="station-card">
+    <div className="station-card" role="region" aria-label={`Bus station ${name}`}>
       <div className="station-header">
         <div className="station-title">
-          <Bus className="station-icon" />
+          <Bus className="station-icon" aria-hidden="true" />
           <span>{name}</span>
           <small>#{stopId}</small>
         </div>
@@ -47,15 +51,9 @@ const BusStation = React.memo(({ name, distance, stopId, vehicles = [], city }) 
           {sortedGroups.map((group, groupIndex) => (
             <div key={groupIndex} className="line-info">
               <div className="line-header">
-                <span className="line-number">
-                  {group.lineNumber}
-                </span>
-                {group.lineName && (
-                  <span className="line-name">{group.lineName}</span>
-                )}
-                {group.stationName && (
-                  <span className="line-destination">→ {group.stationName}</span>
-                )}
+                <span className="line-number">{group.lineNumber}</span>
+                {group.lineName && <span className="line-name">{group.lineName}</span>}
+                {group.stationName && <span className="line-destination">→ {group.stationName}</span>}
               </div>
               <div className="arrival-times">
                 {group.arrivals
@@ -84,14 +82,20 @@ const HaTransportCard = ({ config }) => {
 
   const fetchStations = useCallback(async () => {
     try {
-      const { latitude, longitude } = config;
+      if (!config?.latitude || !config?.longitude) {
+        throw new Error('Missing coordinates configuration');
+      }
       const response = await fetch(
-        `${SERVER_IP}/api/v1/nearest?lat=${latitude}&lon=${longitude}`
+        `${SERVER_IP}/api/v1/nearest?lat=${config.latitude}&lon=${config.longitude}`
       );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       setStations(data);
       setError(null);
     } catch (err) {
+      console.error('Error fetching stations:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -99,9 +103,18 @@ const HaTransportCard = ({ config }) => {
   }, [config]);
 
   useEffect(() => {
-    fetchStations();
-    const interval = setInterval(fetchStations, 30000);
-    return () => clearInterval(interval);
+    let mounted = true;
+    const fetchData = async () => {
+      if (mounted) {
+        await fetchStations();
+      }
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 30000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, [fetchStations]);
 
   if (loading) return <div>Loading...</div>;
@@ -116,26 +129,37 @@ const HaTransportCard = ({ config }) => {
   );
 };
 
-
 class CityDashboardPanel extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
     this.config = null;
+    this._root = null;
   }
 
   async connectedCallback() {
-    this.config = await getHomeAssistantConfig();
-    const container = document.createElement('div');
-    container.style.cssText = `
-      height: 100%;
-      padding: 16px;
-      background: var(--primary-background-color);
-      color: var(--primary-text-color);
-    `;
-    this.shadowRoot.appendChild(container);
-    const root = createRoot(container);
-    root.render(<HaTransportCard config={this.config} />);
+    try {
+      this.config = await getHomeAssistantConfig();
+      const container = document.createElement('div');
+      container.style.cssText = `
+        height: 100%;
+        padding: 16px;
+        background: var(--primary-background-color);
+        color: var(--primary-text-color);
+      `;
+      this.shadowRoot.appendChild(container);
+      this._root = createRoot(container);
+      this._root.render(<HaTransportCard config={this.config} />);
+    } catch (error) {
+      console.error('Failed to initialize dashboard:', error);
+    }
+  }
+
+  disconnectedCallback() {
+    if (this._root) {
+      this._root.unmount();
+      this._root = null;
+    }
   }
 }
 
@@ -143,16 +167,20 @@ class CityDashboardPanel extends HTMLElement {
 customElements.define('city-dashboard-panel', CityDashboardPanel);
 
 // Home Assistant panel registration
-if (!window.customPanels) {
-  window.customPanels = [];
-}
+window.customPanels = window.customPanels || [];
 
-window.customPanels.push({
-  name: "beograd_transport",
-  url_path: "beograd_transport",
+const panelConfig = {
   component_name: "city-dashboard-panel",
   icon: "mdi:bus",
-  title: "Belgrade Transport"
-});
+  name: "city_dashboard",
+  title: "City Transport",
+  url_path: "city-dashboard",
+  require_admin: false
+};
 
-registerPanel();
+window.customPanels.push(panelConfig);
+
+// Register with Home Assistant
+if (window.loadCustomPanel) {
+  window.loadCustomPanel(panelConfig);
+}
