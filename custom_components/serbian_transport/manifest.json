@@ -1,0 +1,12 @@
+{
+    "domain": "serbian_transport",
+    "name": "Serbian Transport",
+    "documentation": "https://github.com/dzarlax/HASS-Serbian-transport",
+    "issue_tracker": "https://github.com/dzarlax/HASS-Serbian-transport/issues",
+    "dependencies": [],
+    "config_flow": true,
+    "codeowners": ["@dzarlax"],
+    "requirements": [],
+    "version": "1.0.0",
+    "iot_class": "cloud_polling"
+}

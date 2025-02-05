@@ -1,4 +1,4 @@
-name: HACS Action
+name: HACS Card Action
 on:
   push:
   pull_request:
@@ -7,10 +7,10 @@ on:
 
 jobs:
   hacs:
-    name: HACS Action
+    name: HACS Card Action
     runs-on: ubuntu-latest
     steps:
       - name: HACS Action
         uses: hacs/action@main
         with:
-          category: integration
+          category: plugin
