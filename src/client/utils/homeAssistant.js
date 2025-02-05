@@ -9,7 +9,7 @@ export const getHomeAssistantConfig = async () => {
 
       // Получаем настройки интеграции
       const entries = await window.hassConnection.sendMessagePromise({ type: 'config_entries/get' });
-      const cityDashboardEntry = entries.find(entry => entry.domain === 'beograd_transport');
+      const cityDashboardEntry = entries.find(entry => entry.domain === 'city_dashboard');
 
       if (!cityDashboardEntry) {
         console.warn('City Dashboard integration not found');

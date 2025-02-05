@@ -1,4 +1,4 @@
 """Constants for the City Dashboard integration."""
-DOMAIN = "beograd_transport"
-NAME = "Belgrade transport"
+DOMAIN = "city_dashboard"
+NAME = "City Dashboard"
 VERSION = "1.0.0"

@@ -1,5 +1,5 @@
 export function isHomeAssistant() {
-  return window.location.pathname.includes('/beograd_transport');
+  return window.location.pathname.includes('city-dashboard');
 }
 
 export function getLocation() {
@@ -28,6 +28,6 @@ export function getLocation() {
 
 export const getServiceWorkerUrl = () => {
   return isHomeAssistant()
-    ? `${window.location.origin}/local/beograd_transport/service-worker.js`
+    ? `${window.location.origin}/local/city_dashboard/service-worker.js`
     : 'https://transport.dzarlax.dev/service-worker.js';
 };

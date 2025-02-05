@@ -1,4 +1,4 @@
-"""Config flow for Serbian Transport integration."""
+"""Config flow for City Dashboard integration."""
 from __future__ import annotations
 
 import voluptuous as vol
@@ -16,7 +16,7 @@ GEO_SOURCE_HA = "homeassistant"
 GEO_SOURCE_MANUAL = "manual"
 
 class CityDashboardConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle the config flow for Serbian Transport."""
+    """Handle the config flow for City Dashboard."""
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
@@ -83,7 +83,7 @@ class CityDashboardConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options flow for Serbian Transport."""
+    """Handle options flow for City Dashboard."""
 
     def __init__(self, config_entry):
         """Initialize options flow."""
