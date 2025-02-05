@@ -5,7 +5,7 @@ import shutil
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.components.http import StaticPathConfig
-from homeassistant.components.lovelace import add_extra_js_url
+from homeassistant.components.frontend import add_extra_js_url
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Register JS module
     add_extra_js_url(hass, url_path)  
-      
+
     # Load platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
