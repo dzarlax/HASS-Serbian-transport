@@ -1,7 +1,6 @@
 """The Serbian Transport integration."""
 import logging
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant
 from homeassistant.components.lovelace.resources import async_register_resource
 
@@ -17,20 +16,20 @@ async def async_setup(hass: HomeAssistant, config) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Serbian Transport from a config entry."""
     hass.data.setdefault(DOMAIN, {})
-    
+
     # Регистрация статического пути
     hass.http.register_static_path(
-        f"/hacsfiles/{DOMAIN}/transport-card.js",
-        hass.config.path(f"custom_components/{DOMAIN}/www/transport-card.js"),
+        f"/local/community/{DOMAIN}/transport-card.js",
+        hass.config.path(f"www/community/{DOMAIN}/transport-card.js"),
         cache_headers=True
     )
-    
+
     # Регистрация ресурса в Lovelace
     try:
         await async_register_resource(
             hass,
             "module",
-            f"/hacsfiles/{DOMAIN}/transport-card.js"
+            f"/local/community/{DOMAIN}/transport-card.js"
         )
     except Exception as e:
         _LOGGER.error("Failed to register Lovelace resource: %s", e)
