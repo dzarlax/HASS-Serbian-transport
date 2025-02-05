@@ -23,15 +23,15 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Serbian Transport from a config entry."""
     hass.data.setdefault(DOMAIN, {})
-    # Copy files to www directory
+    
+    # Copy files to www/community directory
     www_path = hass.config.path("www")
-    www_component = hass.config.path("www", DOMAIN)
+    www_community = hass.config.path("www", "community")
+    www_component = hass.config.path("www", "community", DOMAIN)
     
-    if not os.path.exists(www_path):
-        os.makedirs(www_path)
-    
-    if not os.path.exists(www_component):
-        os.makedirs(www_component)
+    for path in [www_path, www_community, www_component]:
+        if not os.path.exists(path):
+            os.makedirs(path)
     
     # Copy component files
     local_www = os.path.join(os.path.dirname(__file__), "www")
