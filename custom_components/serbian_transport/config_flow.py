@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import voluptuous as vol
-from typing import Any, Final
+from typing import Any
 
 # Import these at module level
 from homeassistant.config_entries import ConfigFlow, ConfigEntry, OptionsFlow
@@ -24,20 +24,30 @@ class SerbianTransportConfigFlow(ConfigFlow, domain=DOMAIN):
         """Handle the initial step."""
         errors = {}
 
+        # Проверка на дубликаты
+        await self.async_set_unique_id(DOMAIN)
+        self._abort_if_unique_id_configured()
+
         if user_input is not None:
-            # Use location from HA config if not specified
-            latitude = user_input.get(CONF_LATITUDE, self.hass.config.latitude)
-            longitude = user_input.get(CONF_LONGITUDE, self.hass.config.longitude)
+            try:
+                latitude = user_input.get(CONF_LATITUDE, self.hass.config.latitude)
+                longitude = user_input.get(CONF_LONGITUDE, self.hass.config.longitude)
+            except AttributeError:
+                errors["base"] = "invalid_coordinates"
+                latitude = None
+                longitude = None
+
             search_rad = user_input.get("search_rad", 1000)
 
-            return self.async_create_entry(
-                title="Serbian Transport",
-                data={
-                    CONF_LATITUDE: latitude,
-                    CONF_LONGITUDE: longitude,
-                    "search_rad": search_rad,
-                }
-            )
+            if latitude is not None and longitude is not None:
+                return self.async_create_entry(
+                    title="Serbian Transport",
+                    data={
+                        CONF_LATITUDE: latitude,
+                        CONF_LONGITUDE: longitude,
+                        "search_rad": search_rad,
+                    }
+                )
 
         return self.async_show_form(
             step_id="user",
@@ -45,11 +55,11 @@ class SerbianTransportConfigFlow(ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(
                         CONF_LATITUDE,
-                        default=self.hass.config.latitude
+                        default=self.hass.config.latitude if self.hass.config.latitude else 0.0
                     ): cv.latitude,
                     vol.Required(
                         CONF_LONGITUDE,
-                        default=self.hass.config.longitude
+                        default=self.hass.config.longitude if self.hass.config.longitude else 0.0
                     ): cv.longitude,
                     vol.Required(
                         "search_rad",
