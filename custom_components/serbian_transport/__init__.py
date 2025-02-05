@@ -3,7 +3,7 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant
-from homeassistant.components.http import StaticPath
+from homeassistant.components.http.static_path import static_path_from_config
 from homeassistant.components.lovelace.resources import async_register_resource
 
 _LOGGER = logging.getLogger(__name__)
@@ -19,14 +19,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Serbian Transport from a config entry."""
     hass.data.setdefault(DOMAIN, {})
     
-    # Register static paths using the new method
-    await hass.http.async_register_static_paths([
-        StaticPath(
-            url_path=f"/hacsfiles/{DOMAIN}/transport-card.js",
-            path=hass.config.path(f"custom_components/{DOMAIN}/www/transport-card.js"),
-            cache_headers=True
-        )
-    ])
+    # Register static path using static_path_from_config
+    static_path = static_path_from_config(
+        url_path=f"/hacsfiles/{DOMAIN}/transport-card.js",
+        path=hass.config.path(f"custom_components/{DOMAIN}/www/transport-card.js"),
+        cache_headers=True
+    )
+    
+    await hass.http.async_register_static_path(static_path)
     
     # Register as a Lovelace resource
     try:
