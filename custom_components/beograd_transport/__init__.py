@@ -15,11 +15,32 @@ PLATFORMS: list[str] = []
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Serbian Transport component."""
+    
     return True
+
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Serbian Transport from a config entry."""
     hass.data.setdefault(DOMAIN, {})
+    # Copy files to www directory
+    www_path = hass.config.path("www")
+    www_component = hass.config.path("www", DOMAIN)
+    
+    if not os.path.exists(www_path):
+        os.makedirs(www_path)
+    
+    if not os.path.exists(www_component):
+        os.makedirs(www_component)
+    
+    # Copy component files
+    local_www = os.path.join(os.path.dirname(__file__), "www")
+    if os.path.exists(local_www):
+        for file in os.listdir(local_www):
+            src = os.path.join(local_www, file)
+            dst = os.path.join(www_component, file)
+            if os.path.isfile(src):
+                shutil.copy2(src, dst)
     
     if entry.options.get("add_sidebar", True):
         _LOGGER.debug("Registering panel for Serbian Transport")
