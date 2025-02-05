@@ -39,29 +39,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 shutil.copy2(src, dst)
                 _LOGGER.debug("Copied %s to %s", src, dst)
 
-    # Register static path
+     # Register static path and Lovelace resource
+    url_path = f"/local/community/{DOMAIN}/transport-card.js"
+    file_path = hass.config.path(f"www/community/{DOMAIN}/transport-card.js")
+    
     await hass.http.async_register_static_paths([
-        StaticPathConfig(
-            url_path=f"/local/community/{DOMAIN}/transport-card.js",
-            path=hass.config.path(f"www/community/{DOMAIN}/transport-card.js"),
-            cache_headers=True
-        )
+        StaticPathConfig(url_path=url_path, path=file_path, cache_headers=True)
     ])
 
-
-    # Store configuration
-    hass.data[DOMAIN][entry.entry_id] = {
-        "config": entry.data,
-        "options": entry.options,
-    }
-
-    # Register Lovelace resource
-    await async_register_resource(
-        hass,
-        "module",
-        f"/local/community/{DOMAIN}/transport-card.js",
-        {DOMAIN}
-    )
+    await async_register_resource(hass, "module", url_path, {DOMAIN})
 
     # Load platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
