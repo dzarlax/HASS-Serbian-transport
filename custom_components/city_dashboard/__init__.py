@@ -23,19 +23,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     
     if entry.options.get("add_sidebar", True):
         _LOGGER.debug("Registering panel for City Dashboard")
-        frontend.async_remove_panel(hass, "city-dashboard")
+        frontend.async_remove_panel(hass, "beograd_transport")
         
         frontend.async_register_built_in_panel(
             hass,
             "custom",
             sidebar_title=NAME,
             sidebar_icon="mdi:bus",
-            frontend_url_path="city-dashboard",
+            frontend_url_path="beograd_transport",
             require_admin=False,
             config={
                 "_panel_custom": {
-                    "name": "city-dashboard",
-                    "module_url": "/local/community/city_dashboard/dashboard.js",
+                    "name": "beograd_transport",
+                    "module_url": "/local/community/beograd_transport/dashboard.js",
                     "embed_iframe": False,
                     "trust_external": True
                 }
@@ -56,7 +56,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     if entry.options.get("add_sidebar", True):
-        frontend.async_remove_panel(hass, "city-dashboard")
+        frontend.async_remove_panel(hass, "beograd_transport")
     hass.data[DOMAIN].pop(entry.entry_id)
     return True
 
