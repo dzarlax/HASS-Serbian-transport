@@ -3,7 +3,7 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant
-from homeassistant.components.http.static import StaticPathConfig
+from homeassistant.components.http import StaticPath
 from homeassistant.components.lovelace.resources import async_register_resource
 
 _LOGGER = logging.getLogger(__name__)
@@ -19,9 +19,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Serbian Transport from a config entry."""
     hass.data.setdefault(DOMAIN, {})
     
-    # Register static paths using the new async method
+    # Register static paths using the new method
     await hass.http.async_register_static_paths([
-        StaticPathConfig(
+        StaticPath(
             url_path=f"/hacsfiles/{DOMAIN}/transport-card.js",
             path=hass.config.path(f"custom_components/{DOMAIN}/www/transport-card.js"),
             cache_headers=True
@@ -29,11 +29,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     ])
     
     # Register as a Lovelace resource
-    await async_register_resource(
-        hass,
-        "module",
-        f"/hacsfiles/{DOMAIN}/transport-card.js"
-    )
+    try:
+        await async_register_resource(
+            hass,
+            "module",
+            f"/hacsfiles/{DOMAIN}/transport-card.js"
+        )
+    except Exception as e:
+        _LOGGER.error("Failed to register Lovelace resource: %s", e)
+
+    # Store configuration
+    hass.data[DOMAIN][entry.entry_id] = {
+        "config": entry.data,
+        "options": entry.options,
+    }
 
     # Load platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -44,6 +53,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
-        # Remove static path if needed
-        await hass.http.async_remove_static_path(f"/hacsfiles/{DOMAIN}/transport-card.js")
+        # Remove static path
+        try:
+            await hass.http.async_remove_static_path(f"/hacsfiles/{DOMAIN}/transport-card.js")
+        except Exception as e:
+            _LOGGER.error("Failed to remove static path: %s", e)
     return unload_ok

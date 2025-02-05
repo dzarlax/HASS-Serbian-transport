@@ -2,15 +2,16 @@
 from __future__ import annotations
 
 import voluptuous as vol
-from typing import Any
+from typing import Any, Final
 
+# Import these at module level
 from homeassistant.config_entries import ConfigFlow, ConfigEntry, OptionsFlow
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 import homeassistant.helpers.config_validation as cv
 
-from . import DOMAIN
+from .const import DOMAIN  # Import from const.py instead of __init__.py
 
 class SerbianTransportConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Serbian Transport."""
