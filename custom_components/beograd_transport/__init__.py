@@ -67,7 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             config={
                 "_panel_custom": {
                     "name": DOMAIN,
-                    "module_url": f"/local/community/{DOMAIN}/HAdashboard.js",
+                    "module_url": f"/local/community/{DOMAIN}/dashboard.js",  # Changed from HAdashboard.js
                     "embed_iframe": False,
                     "trust_external": True
                 }

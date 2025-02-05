@@ -14,10 +14,10 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        'dashboard': 'src/client/HAdashboard.js'
+          'dashboard': 'src/client/HAdashboard.js'  // Input stays the same
       },
       output: {
-        entryFileNames: '[name].js',
+          entryFileNames: 'dashboard.js',  // Changed output filename
       },
     },
     sourcemap: true,
