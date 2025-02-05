@@ -88,10 +88,10 @@ jobs:
           
           # Create zip from the content of hacs-release directory
           cd hacs-release/custom_components/city_dashboard
-          zip -r ../city_dashboard.zip * || echo "Zip creation failed"
+          zip -r ../beograd_transport.zip * || echo "Zip creation failed"
           cd ..
-          ls -la city_dashboard.zip || echo "Zip file not found"
-          cp city_dashboard.zip ../../
+          ls -la beograd_transport.zip || echo "Zip file not found"
+          cp beograd_transport.zip ../../
 
       - name: Commit version bump
         run: |
