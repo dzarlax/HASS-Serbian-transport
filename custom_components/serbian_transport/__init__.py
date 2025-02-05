@@ -18,14 +18,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Serbian Transport from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
-    # Регистрация статического пути
-    await hass.http.async_register_static_paths([StaticPathConfig("/local/community/serbian_transport/transport-card.js", "/config/www/community/serbian_transport/transport-card.js", True)])(
-        f"/local/community/{DOMAIN}/transport-card.js",
-        hass.config.path(f"www/community/{DOMAIN}/transport-card.js"),
-        cache_headers=True
-    )
+    # Register static path correctly
+    await hass.http.async_register_static_paths([
+        StaticPathConfig(
+            url_path=f"/local/community/{DOMAIN}/transport-card.js",
+            file_path=hass.config.path(f"www/community/{DOMAIN}/transport-card.js"),
+            cache_headers=True
+        )
+    ])
 
-    # Ручная регистрация ресурса в Lovelace
+    # Register Lovelace resource
     if "lovelace_resources" in hass.data:
         resources = hass.data["lovelace_resources"]
         resource_url = f"/local/community/{DOMAIN}/transport-card.js"
@@ -33,19 +35,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             resources.append({"type": "module", "url": resource_url})
             _LOGGER.info("Registered Lovelace resource: %s", resource_url)
 
-    # Сохранение конфигурации
+    # Store configuration
     hass.data[DOMAIN][entry.entry_id] = {
         "config": entry.data,
         "options": entry.options,
     }
 
-    # Загрузка платформ
+    # Load platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
-
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload a config entry."""
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id, None)
-    return unload_ok
