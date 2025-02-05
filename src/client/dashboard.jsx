@@ -116,6 +116,7 @@ const HaTransportCard = ({ config }) => {
   );
 };
 
+
 class CityDashboardPanel extends HTMLElement {
   constructor() {
     super();
@@ -138,19 +139,20 @@ class CityDashboardPanel extends HTMLElement {
   }
 }
 
-customElements.whenDefined('home-assistant').then(() => {
-  customElements.define('city-dashboard-panel', CityDashboardPanel);
-  
-  const homeAssistant = customElements.get('home-assistant');
-  homeAssistant.registerPanel(
-    "beograd_transport",
-    {
-      name: "Belgrade transport",
-      icon: "mdi:bus",
-      url_path: "beograd_transport",
-      component_name: "city-dashboard-panel"
-    }
-  );
+// Register the custom element
+customElements.define('city-dashboard-panel', CityDashboardPanel);
+
+// Home Assistant panel registration
+if (!window.customPanels) {
+  window.customPanels = [];
+}
+
+window.customPanels.push({
+  name: "beograd_transport",
+  url_path: "beograd_transport",
+  component_name: "city-dashboard-panel",
+  icon: "mdi:bus",
+  title: "Belgrade Transport"
 });
 
 registerPanel();
