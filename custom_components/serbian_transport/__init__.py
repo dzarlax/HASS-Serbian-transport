@@ -5,7 +5,7 @@ import shutil
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.components.http import StaticPathConfig
-from homeassistant.helpers.resources import async_register_resource
+from homeassistant.components.lovelace.resources import async_register_resource
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,13 +48,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
     ])
 
-    # Register Lovelace resource
-    if "lovelace_resources" in hass.data:
-        resources = hass.data["lovelace_resources"]
-        resource_url = f"/local/community/{DOMAIN}/transport-card.js"
-        if not any(res["url"] == resource_url for res in resources):
-            resources.append({"type": "module", "url": resource_url})
-            _LOGGER.info("Registered Lovelace resource: %s", resource_url)
 
     # Store configuration
     hass.data[DOMAIN][entry.entry_id] = {
