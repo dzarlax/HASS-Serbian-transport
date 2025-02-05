@@ -3,10 +3,11 @@
     "name": "Serbian Transport",
     "documentation": "https://github.com/dzarlax/HASS-Serbian-transport",
     "issue_tracker": "https://github.com/dzarlax/HASS-Serbian-transport/issues",
-    "dependencies": [],
+    "dependencies": ["frontend", "http"],
     "config_flow": true,
     "codeowners": ["@dzarlax"],
     "requirements": [],
     "version": "1.0.0",
-    "iot_class": "cloud_polling"
+    "iot_class": "cloud_polling",
+    "homeassistant": "2025.1.0"
 }
