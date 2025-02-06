@@ -1,3 +1,4 @@
+
 # Serbian Transport Integration
 
 Home Assistant integration for Serbian public transport information.
@@ -40,3 +41,47 @@ If the custom card doesn't appear in your Lovelace dashboard, you may need to ad
 ## Repository
 
 This integration is part of the [City Dashboard](https://github.com/dzarlax/city-dashboard) project.
+
+
+# Srpski Transport Integracija
+
+Home Assistant integracija za informacije o srpskom javnom prevozu.
+
+## Funkcije
+- Informacije o dolasku autobusa u realnom vremenu
+- Otkrivanje najbližih stanica
+- Prilagođena Lovelace kartica
+
+## Podržani gradovi
+- Beograd (GSP Beograd)
+- Novi Sad (JGSP Novi Sad)
+- Niš (JKP Direkcija za javni prevoz grada Niša)
+
+## Instalacija
+1. Dodajte ovaj repozitorijum u HACS
+2. Instalirajte "Serbian Transport" iz HACS-a
+3. Restartujte Home Assistant
+4. Dodajte integraciju kroz HA Podešavanja -> Uređaji i Servisi
+
+## Upotreba
+Nakon instalacije, možete koristiti prilagođenu karticu u Lovelace interfejsu:
+
+```yaml
+type: 'custom:transport-card'
+entity: sensor.transport_stations_count
+```
+
+## Rešavanje problema
+
+Ako se prilagođena kartica ne pojavljuje na vašoj Lovelace kontrolnoj tabli, možda ćete morati da je dodate ručno kao resurs:
+
+1. Idite na Konfiguracija -> Lovelace kontrolne table -> Resursi
+2. Kliknite na "+" dugme da dodate novi resurs
+3. Unesite sledeći URL: `/hacsfiles/transport-card/transport-card.js`
+4. Izaberite "JavaScript Module" kao tip resursa
+5. Kliknite "Kreiraj"
+6. Osvežite pregledač
+
+## Repozitorijum
+
+Ova integracija je deo [City Dashboard](https://github.com/dzarlax/city-dashboard) projekta.
