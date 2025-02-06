@@ -85,3 +85,10 @@ Ako se prilagođena kartica ne pojavljuje na vašoj Lovelace kontrolnoj tabli, m
 ## Repozitorijum
 
 Ova integracija je deo [City Dashboard](https://github.com/dzarlax/city-dashboard) projekta.
+
+
+## Attribution / Atribucija
+
+In this project, the bus icon from [Flaticon](https://www.flaticon.com/free-icons/bus) is used. Bus icons created by Freepik - Flaticon.
+
+U ovom projektu korišćena je ikonica autobusa sa [Flaticon](https://www.flaticon.com/free-icons/bus). Bus ikonice kreirao Freepik - Flaticon.
