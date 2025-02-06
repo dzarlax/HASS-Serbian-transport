@@ -20,3 +20,18 @@ After installation, you can use the custom card in your Lovelace UI:
 type: 'custom:transport-card'
 entity: sensor.transport_stations_count
 ```
+
+## Troubleshooting
+
+If the custom card doesn't appear in your Lovelace dashboard, you may need to add it manually as a resource:
+
+1. Go to Configuration -> Lovelace Dashboards -> Resources
+2. Click the "+" button to add a new resource
+3. Enter the following URL: `/hacsfiles/transport-card/transport-card.js`
+4. Select "JavaScript Module" as the resource type
+5. Click "Create"
+6. Refresh your browser
+
+## Repository
+
+This integration is part of the [City Dashboard](https://github.com/dzarlax/city-dashboard) project.

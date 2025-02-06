@@ -58,15 +58,19 @@ export class TransportCard extends LitElement {
       margin-bottom: 12px;
     }
     .transport-groups {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    }
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
     .transport-group {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    }
+  background: var(--card-background-color);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
     .group-header {
       display: flex;
       align-items: center;
@@ -91,17 +95,15 @@ export class TransportCard extends LitElement {
       color: var(--secondary-text-color);
     }
       .arrivals-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
     .arrival-time {
-      color: var(--primary-color);
-      font-weight: 500;
-      cursor: help;
-    }
+  font-size: 0.9em;
+  white-space: nowrap;
+}
 
     .transport-group {
       background: var(--card-background-color);
@@ -150,27 +152,33 @@ export class TransportCard extends LitElement {
   
   renderStop(stop) {
     const groups = this.groupVehiclesByLine(stop.vehicles);
-  
+    
     return html`
       <div class="stop-item">
-      <div class="stop-name">
-        <ha-icon icon="mdi:bus-stop" size="16"></ha-icon>
-        ${stop.name}
-      </div>
-      <div class="transport-groups">
-        ${Object.values(groups).map(group => html`
-        <div class="transport-group">
-          <span class="line-number">${group.lineNumber}</span>
-          <span class="arrival-times" title="${group.lineName}">
-          ${group.arrivals.sort((a,b) => a.seconds - b.seconds)
-            .slice(0,3)
-            .map(({seconds, stations}) => 
-            `${Math.ceil(seconds/60)} min${stations ? ` (${stations} st)` : ''}`
-            ).join('·')}
-          </span>
+        <div class="stop-name">
+          <ha-icon icon="mdi:bus-stop" size="16"></ha-icon>
+          ${stop.name}
         </div>
-        `)}
-      </div>
+        <div class="transport-groups">
+          ${Object.values(groups).map(group => html`
+            <div class="transport-group">
+              <div class="group-header">
+                <span class="line-number">${group.lineNumber}</span>
+                <span class="line-name">${group.lineName}</span>
+              </div>
+              <div class="arrivals-list">
+                ${group.arrivals
+                  .sort((a,b) => a.seconds - b.seconds)
+                  .slice(0,3)
+                  .map(({seconds, stations}) => html`
+                    <span class="arrival-time">
+                      ${Math.ceil(seconds/60)} min${stations ? ` (${stations} st)` : ''}
+                    </span>
+                  `)}
+              </div>
+            </div>
+          `)}
+        </div>
       </div>
     `;
   }
