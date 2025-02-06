@@ -28,24 +28,24 @@ export class TransportCard extends LitElement {
       color: var(--primary-text-color);
     }
     .stop-list {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 12px;
+    padding: 8px;
     }
     .stop-item {
-      background: var(--primary-background-color);
-      border-radius: 8px;
-      padding: 16px;
-      border: 1px solid var(--divider-color, rgba(0,0,0,0.12));
+    background: var(--card-background-color);
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid var(--divider-color);
     }
     .stop-name {
-      font-size: 1.1em;
-      font-weight: 500;
-      margin-bottom: 8px;
-      color: var(--primary-text-color);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    font-size: 1em;
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     }
     .stop-id {
       font-size: 0.8em;
@@ -58,16 +58,14 @@ export class TransportCard extends LitElement {
       margin-bottom: 12px;
     }
     .transport-groups {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
     }
     .transport-group {
-      background: var(--card-background-color);
-      border-radius: 6px;
-      padding: 12px;
-      flex: 1;
-      min-width: 200px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     }
     .group-header {
       display: flex;
@@ -77,15 +75,16 @@ export class TransportCard extends LitElement {
       font-weight: 500;
     }
     .line-number {
-      background: var(--primary-color);
-      color: var(--primary-text-color);
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.9em;
+    background: var(--primary-color);
+    color: var(--primary-text-color);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: 500;
     }
-    .arrival-time {
-      color: var(--primary-color);
-      font-weight: 500;
+    .arrival-times {
+    color: var(--primary-color);
+    font-size: 0.9em;
     }
     .line-name {
       font-size: 0.9em;
@@ -139,12 +138,12 @@ export class TransportCard extends LitElement {
     const sortedArrivals = arrivals.sort((a, b) => a.seconds - b.seconds);
     return html`
       <div class="arrivals-list">
-        ${sortedArrivals.map(({ seconds, stations }, index) => html`
-          ${index > 0 ? ', ' : ''}
-          <span class="arrival-time" title="${stations} stops away">
-            ${Math.ceil(seconds/60)}${stations ? `(${stations})` : ''}
-          </span>
-        `)}
+      ${sortedArrivals.map(({ seconds, stations }, index) => html`
+        ${index > 0 ? ', ' : ''}
+        <span class="arrival-time" title="${stations} stops away">
+        ${Math.ceil(seconds / 60)} min${stations ? ` (${stations})` : ''}
+        </span>
+      `)}
       </div>
     `;
   }
@@ -155,23 +154,22 @@ export class TransportCard extends LitElement {
     return html`
       <div class="stop-item">
         <div class="stop-name">
-          <ha-icon icon="mdi:bus-stop"></ha-icon>
-          ${stop.name} 
-          <span class="stop-id">#${stop.stopId}</span>
+          <ha-icon icon="mdi:bus-stop" size="16"></ha-icon>
+          ${stop.name}
         </div>
         <div class="transport-groups">
-          ${Object.values(groups).length > 0
-            ? Object.values(groups).map(group => html`
-                <div class="transport-group">
-                  <div class="group-header">
-                    <span class="line-number">${group.lineNumber}</span>
-                    <span class="line-name">${group.lineName}</span>
-                  </div>
-                  ${this.renderArrivalTimes(group.arrivals)}
-                </div>
-              `)
-            : html`<div class="no-data">No transport data available</div>`
-          }
+          ${Object.values(groups).map(group => html`
+            <div class="transport-group">
+              <span class="line-number">${group.lineNumber}</span>
+              <span class="arrival-times" title="${group.lineName}">
+                ${group.arrivals.sort((a,b) => a.seconds - b.seconds)
+                  .slice(0,3)
+                  .map(({seconds, stations}) => 
+                    `${Math.ceil(seconds/60)}/${stations}`
+                  ).join('·')}
+              </span>
+            </div>
+          `)}
         </div>
       </div>
     `;
