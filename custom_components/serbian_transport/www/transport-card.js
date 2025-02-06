@@ -1,4 +1,3 @@
-// Use CDN imports for Lit
 import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/core/lit-core.min.js';
 
 export class TransportCard extends LitElement {
@@ -13,68 +12,167 @@ export class TransportCard extends LitElement {
     :host {
       display: block;
     }
+    ha-card {
+      background: var(--card-background-color, var(--ha-card-background, white));
+      border-radius: var(--ha-card-border-radius, 12px);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 4px rgba(0,0,0,0.1));
+      color: var(--primary-text-color);
+    }
     .card {
       padding: 16px;
     }
     .title {
-      font-size: 1.2em;
-      margin-bottom: 8px;
+      font-size: 1.4em;
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: var(--primary-text-color);
     }
     .stop-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 16px;
     }
     .stop-item {
-      background: var(--ha-card-background, white);
+      background: var(--primary-background-color);
       border-radius: 8px;
-      padding: 8px;
-      box-shadow: var(--ha-card-box-shadow, none);
+      padding: 16px;
+      border: 1px solid var(--divider-color, rgba(0,0,0,0.12));
     }
     .stop-name {
-      font-weight: bold;
+      font-size: 1.1em;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--primary-text-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .small-text {
+    .stop-id {
+      font-size: 0.8em;
+      color: var(--secondary-text-color);
+      font-weight: normal;
+    }
+    .distance {
+      font-size: 0.9em;
+      color: var(--secondary-text-color);
+      margin-bottom: 12px;
+    }
+    .transport-groups {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .transport-group {
+      background: var(--card-background-color);
+      border-radius: 6px;
+      padding: 12px;
+      flex: 1;
+      min-width: 200px;
+    }
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .line-number {
+      background: var(--primary-color);
+      color: var(--primary-text-color);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    .arrival-time {
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+    .line-name {
       font-size: 0.9em;
       color: var(--secondary-text-color);
     }
   `;
 
   setConfig(config) {
-    if (!config.entity) {
-      throw new Error("Parameter 'entity' is required!");
-    }
+    if (!config.entity) throw new Error("Parameter 'entity' is required!");
     this._config = config;
   }
 
-  get entityState() {
-    if (!this._config || !this.hass) return null;
-    return this.hass.states[this._config.entity];
+  groupVehiclesByLine(vehicles) {
+    return vehicles?.reduce((groups, vehicle) => {
+      const key = vehicle.lineNumber;
+      if (!groups[key]) {
+        groups[key] = {
+          lineNumber: key,
+          lineName: vehicle.lineName,
+          arrivals: []
+        };
+      }
+      groups[key].arrivals.push(vehicle.secondsLeft);
+      return groups;
+    }, {}) ?? {};
+  }
+
+  renderStop(stop) {
+    const groups = this.groupVehiclesByLine(stop.vehicles);
+
+    return html`
+      <div class="stop-item">
+        <div class="stop-name">
+          <ha-icon icon="mdi:bus-stop"></ha-icon>
+          ${stop.name} 
+          <span class="stop-id">#${stop.stopId}</span>
+        </div>
+        <div class="distance">
+          <ha-icon icon="mdi:map-marker" size="small"></ha-icon>
+          ${stop.distance}
+        </div>
+        <div class="transport-groups">
+          ${Object.values(groups).length > 0
+            ? Object.values(groups).map(group => html`
+                <div class="transport-group">
+                  <div class="group-header">
+                    <span class="line-number">${group.lineNumber}</span>
+                    <span class="line-name">${group.lineName}</span>
+                  </div>
+                  ${group.arrivals.sort((a, b) => a - b).map(seconds => html`
+                    <div class="arrival-time">
+                      ${Math.ceil(seconds/60)} min
+                    </div>
+                  `)}
+                </div>
+              `)
+            : html`<div class="no-data">No transport data available</div>`
+          }
+        </div>
+      </div>
+    `;
   }
 
   render() {
-    if (!this._config || !this.entityState) {
+    if (!this._config || !this.hass) {
       return html`
         <ha-card>
           <div class="card">
-            <div>No data or invalid configuration</div>
+            <div>Invalid configuration</div>
           </div>
         </ha-card>
       `;
     }
 
-    const attr = this.entityState.attributes;
-    const stops = attr.stations || [];
+    const attr = this.hass.states[this._config.entity]?.attributes ?? {};
+    const stops = attr.stations ?? [];
 
     return html`
       <ha-card>
         <div class="card">
           <div class="title">
+            <ha-icon icon="mdi:bus"></ha-icon>
             ${this._config.title || 'Transport Stations'}
           </div>
           <div class="stop-list">
             ${stops.length > 0
-              ? stops.map((stop) => this.renderStop(stop))
+              ? stops.map(stop => this.renderStop(stop))
               : html`<div>No stops available</div>`
             }
           </div>
@@ -82,30 +180,6 @@ export class TransportCard extends LitElement {
       </ha-card>
     `;
   }
-
-  renderStop(stop) {
-    return html`
-      <div class="stop-item">
-        <div class="stop-name">${stop.name} (#${stop.stopId})</div>
-        <div class="small-text">${stop.distance}</div>
-        ${stop.vehicles && stop.vehicles.length
-          ? html`
-              <ul>
-                ${stop.vehicles.map((v) => html`
-                  <li>
-                    Line: ${v.lineNumber} –
-                    Arriving in ~${Math.ceil(v.secondsLeft/60)} min
-                  </li>
-                `)}
-              </ul>
-            `
-          : html`<div class="small-text">No transport data available</div>`}
-      </div>
-    `;
-  }
 }
 
-// Register the element
 customElements.define('transport-card', TransportCard);
-
-console.info('Transport card has been registered');
