@@ -7,6 +7,11 @@ Home Assistant integration for Serbian public transport information.
 - Nearest stops discovery
 - Custom Lovelace card
 
+## Supported Cities
+- Belgrade (GSP Belgrade)
+- Novi Sad (JGSP Novi Sad)
+- Nis (JKP Direkcija za javni prevoz grada Nisa)
+
 ## Installation
 1. Add this repository to HACS
 2. Install "Serbian Transport" from HACS
