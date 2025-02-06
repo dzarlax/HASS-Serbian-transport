@@ -28,24 +28,24 @@ export class TransportCard extends LitElement {
       color: var(--primary-text-color);
     }
     .stop-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 12px;
-    padding: 8px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
+      padding: 8px;
     }
     .stop-item {
-    background: var(--card-background-color);
-    border-radius: 8px;
-    padding: 12px;
-    border: 1px solid var(--divider-color);
+      background: var(--card-background-color);
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid var(--divider-color);
     }
     .stop-name {
-    font-size: 1em;
-    font-weight: 500;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+      font-size: 1em;
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     .stop-id {
       font-size: 0.8em;
@@ -58,19 +58,19 @@ export class TransportCard extends LitElement {
       margin-bottom: 12px;
     }
     .transport-groups {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 8px;
-}
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+    }
 
     .transport-group {
-  background: var(--card-background-color);
-  border-radius: 6px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+      background: var(--card-background-color);
+      border-radius: 6px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
     .group-header {
       display: flex;
       align-items: center;
@@ -79,31 +79,31 @@ export class TransportCard extends LitElement {
       font-weight: 500;
     }
     .line-number {
-    background: var(--primary-color);
-    color: var(--primary-text-color);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.9em;
-    font-weight: 500;
+      background: var(--primary-color);
+      color: var(--primary-text-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      font-weight: 500;
     }
     .arrival-times {
-    color: var(--primary-color);
-    font-size: 0.9em;
+      color: var(--primary-color);
+      font-size: 0.9em;
     }
     .line-name {
       font-size: 0.9em;
       color: var(--secondary-text-color);
     }
-      .arrivals-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+    .arrivals-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
 
     .arrival-time {
-  font-size: 0.9em;
-  white-space: nowrap;
-}
+      font-size: 0.9em;
+      white-space: nowrap;
+    }
 
     .transport-group {
       background: var(--card-background-color);
@@ -135,7 +135,7 @@ export class TransportCard extends LitElement {
       return groups;
     }, {}) ?? {};
   }
-  
+
   renderArrivalTimes(arrivals) {
     const sortedArrivals = arrivals.sort((a, b) => a.seconds - b.seconds);
     return html`
@@ -149,10 +149,10 @@ export class TransportCard extends LitElement {
       </div>
     `;
   }
-  
+
   renderStop(stop) {
     const groups = this.groupVehiclesByLine(stop.vehicles);
-    
+
     return html`
       <div class="stop-item">
         <div class="stop-name">
@@ -168,11 +168,11 @@ export class TransportCard extends LitElement {
               </div>
               <div class="arrivals-list">
                 ${group.arrivals
-                  .sort((a,b) => a.seconds - b.seconds)
-                  .slice(0,3)
-                  .map(({seconds, stations}) => html`
+        .sort((a, b) => a.seconds - b.seconds)
+        .slice(0, 3)
+        .map(({ seconds, stations }) => html`
                     <span class="arrival-time">
-                      ${Math.ceil(seconds/60)} min${stations ? ` (${stations} st)` : ''}
+                      ${Math.ceil(seconds / 60)} min${stations ? ` (${stations} st)` : ''}
                     </span>
                   `)}
               </div>
@@ -206,9 +206,9 @@ export class TransportCard extends LitElement {
           </div>
           <div class="stop-list">
             ${stops.length > 0
-              ? stops.map(stop => this.renderStop(stop))
-              : html`<div>No stops available</div>`
-            }
+        ? stops.map(stop => this.renderStop(stop))
+        : html`<div>No stops available</div>`
+      }
           </div>
         </div>
       </ha-card>

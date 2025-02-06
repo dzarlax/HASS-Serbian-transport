@@ -1,7 +1,5 @@
 {
     "name": "Serbian Transport",
     "render_readme": true,
-    "domain": "serbian_transport",
-    "homeassistant": "2025.1.0",
-    "frontend_package": "transport-card.js"
+    "render_changelog": true
 }
