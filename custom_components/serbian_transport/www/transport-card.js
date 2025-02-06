@@ -91,6 +91,25 @@ export class TransportCard extends LitElement {
       font-size: 0.9em;
       color: var(--secondary-text-color);
     }
+      .arrivals-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .arrival-time {
+      color: var(--primary-color);
+      font-weight: 500;
+      cursor: help;
+    }
+
+    .transport-group {
+      background: var(--card-background-color);
+      border-radius: 6px;
+      padding: 8px 12px;
+      flex: 1;
+    }
   `;
 
   setConfig(config) {
@@ -108,24 +127,37 @@ export class TransportCard extends LitElement {
           arrivals: []
         };
       }
-      groups[key].arrivals.push(vehicle.secondsLeft);
+      groups[key].arrivals.push({
+        seconds: vehicle.secondsLeft,
+        stations: vehicle.stationsBetween
+      });
       return groups;
     }, {}) ?? {};
   }
-
+  
+  renderArrivalTimes(arrivals) {
+    const sortedArrivals = arrivals.sort((a, b) => a.seconds - b.seconds);
+    return html`
+      <div class="arrivals-list">
+        ${sortedArrivals.map(({ seconds, stations }, index) => html`
+          ${index > 0 ? ', ' : ''}
+          <span class="arrival-time" title="${stations} stops away">
+            ${Math.ceil(seconds/60)}${stations ? `(${stations})` : ''}
+          </span>
+        `)}
+      </div>
+    `;
+  }
+  
   renderStop(stop) {
     const groups = this.groupVehiclesByLine(stop.vehicles);
-
+  
     return html`
       <div class="stop-item">
         <div class="stop-name">
           <ha-icon icon="mdi:bus-stop"></ha-icon>
           ${stop.name} 
           <span class="stop-id">#${stop.stopId}</span>
-        </div>
-        <div class="distance">
-          <ha-icon icon="mdi:map-marker" size="small"></ha-icon>
-          ${stop.distance}
         </div>
         <div class="transport-groups">
           ${Object.values(groups).length > 0
@@ -135,11 +167,7 @@ export class TransportCard extends LitElement {
                     <span class="line-number">${group.lineNumber}</span>
                     <span class="line-name">${group.lineName}</span>
                   </div>
-                  ${group.arrivals.sort((a, b) => a - b).map(seconds => html`
-                    <div class="arrival-time">
-                      ${Math.ceil(seconds/60)} min
-                    </div>
-                  `)}
+                  ${this.renderArrivalTimes(group.arrivals)}
                 </div>
               `)
             : html`<div class="no-data">No transport data available</div>`
