@@ -50,7 +50,7 @@ export class TransportCard extends LitElement {
     .stop-id {
       font-size: 0.8em;
       color: var(--secondary-text-color);
-      font-weight: normal;
+      margin-left: 4px;
     }
     .distance {
       font-size: 0.9em;
@@ -152,12 +152,13 @@ export class TransportCard extends LitElement {
 
   renderStop(stop) {
     const groups = this.groupVehiclesByLine(stop.vehicles);
-
+  
     return html`
       <div class="stop-item">
         <div class="stop-name">
           <ha-icon icon="mdi:bus-stop" size="16"></ha-icon>
-          ${stop.name}
+          ${stop.name} 
+          <span class="stop-id">#${stop.stopId}</span>
         </div>
         <div class="transport-groups">
           ${Object.values(groups).map(group => html`
@@ -168,9 +169,9 @@ export class TransportCard extends LitElement {
               </div>
               <div class="arrivals-list">
                 ${group.arrivals
-        .sort((a, b) => a.seconds - b.seconds)
-        .slice(0, 3)
-        .map(({ seconds, stations }) => html`
+                  .sort((a, b) => a.seconds - b.seconds)
+                  .slice(0, 3)
+                  .map(({ seconds, stations }) => html`
                     <span class="arrival-time">
                       ${Math.ceil(seconds / 60)} min${stations ? ` (${stations} st)` : ''}
                     </span>
