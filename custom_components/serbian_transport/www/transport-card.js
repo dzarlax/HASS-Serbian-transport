@@ -153,24 +153,24 @@ export class TransportCard extends LitElement {
   
     return html`
       <div class="stop-item">
-        <div class="stop-name">
-          <ha-icon icon="mdi:bus-stop" size="16"></ha-icon>
-          ${stop.name}
+      <div class="stop-name">
+        <ha-icon icon="mdi:bus-stop" size="16"></ha-icon>
+        ${stop.name}
+      </div>
+      <div class="transport-groups">
+        ${Object.values(groups).map(group => html`
+        <div class="transport-group">
+          <span class="line-number">${group.lineNumber}</span>
+          <span class="arrival-times" title="${group.lineName}">
+          ${group.arrivals.sort((a,b) => a.seconds - b.seconds)
+            .slice(0,3)
+            .map(({seconds, stations}) => 
+            `${Math.ceil(seconds/60)} min${stations ? ` (${stations} st)` : ''}`
+            ).join('·')}
+          </span>
         </div>
-        <div class="transport-groups">
-          ${Object.values(groups).map(group => html`
-            <div class="transport-group">
-              <span class="line-number">${group.lineNumber}</span>
-              <span class="arrival-times" title="${group.lineName}">
-                ${group.arrivals.sort((a,b) => a.seconds - b.seconds)
-                  .slice(0,3)
-                  .map(({seconds, stations}) => 
-                    `${Math.ceil(seconds/60)}/${stations}`
-                  ).join('·')}
-              </span>
-            </div>
-          `)}
-        </div>
+        `)}
+      </div>
       </div>
     `;
   }
