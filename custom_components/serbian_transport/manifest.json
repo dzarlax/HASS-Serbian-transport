@@ -1,6 +1,7 @@
 {
     "domain": "serbian_transport",
     "name": "Serbian Transport",
+    "icon": "icon.png",
     "config_flow": true,
     "documentation": "https://github.com/dzarlax/HASS-Serbian-transport",
     "issue_tracker": "https://github.com/dzarlax/HASS-Serbian-transport/issues",
