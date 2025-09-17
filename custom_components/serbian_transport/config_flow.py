@@ -1,22 +1,29 @@
 """Config flow for Serbian Transport integration."""
 from __future__ import annotations
 
+import logging
 import voluptuous as vol
 from typing import Any
 
 # Import these at module level
 from homeassistant.config_entries import ConfigFlow, ConfigEntry, OptionsFlow
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 import homeassistant.helpers.config_validation as cv
 
-from .const import DOMAIN  # Import from const.py instead of __init__.py
+from .const import (
+    DOMAIN, 
+    CONF_SEARCH_RADIUS, 
+    DEFAULT_SEARCH_RADIUS
+)
+
+_LOGGER = logging.getLogger(__name__)
 
 class SerbianTransportConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Serbian Transport."""
 
-    VERSION = 1
+    VERSION = 2  # Increment version for migration
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -29,6 +36,8 @@ class SerbianTransportConfigFlow(ConfigFlow, domain=DOMAIN):
         self._abort_if_unique_id_configured()
 
         if user_input is not None:
+            search_rad = user_input.get(CONF_SEARCH_RADIUS, DEFAULT_SEARCH_RADIUS)
+            
             try:
                 latitude = user_input.get(CONF_LATITUDE, self.hass.config.latitude)
                 longitude = user_input.get(CONF_LONGITUDE, self.hass.config.longitude)
@@ -37,15 +46,13 @@ class SerbianTransportConfigFlow(ConfigFlow, domain=DOMAIN):
                 latitude = None
                 longitude = None
 
-            search_rad = user_input.get("search_rad", 1000)
-
             if latitude is not None and longitude is not None:
                 return self.async_create_entry(
                     title="Serbian Transport",
                     data={
                         CONF_LATITUDE: latitude,
                         CONF_LONGITUDE: longitude,
-                        "search_rad": search_rad,
+                        CONF_SEARCH_RADIUS: search_rad,
                     }
                 )
 
@@ -62,8 +69,8 @@ class SerbianTransportConfigFlow(ConfigFlow, domain=DOMAIN):
                         default=self.hass.config.longitude if self.hass.config.longitude else 0.0
                     ): cv.longitude,
                     vol.Required(
-                        "search_rad",
-                        default=1000
+                        CONF_SEARCH_RADIUS,
+                        default=DEFAULT_SEARCH_RADIUS
                     ): vol.All(
                         vol.Coerce(int),
                         vol.Range(min=100, max=20000)
@@ -79,15 +86,11 @@ class SerbianTransportConfigFlow(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> SerbianTransportOptionsFlow:
         """Get the options flow for this handler."""
-        return SerbianTransportOptionsFlow(config_entry)
+        return SerbianTransportOptionsFlow()
 
 
 class SerbianTransportOptionsFlow(OptionsFlow):
     """Handle options."""
-
-    def __init__(self, config_entry: ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -101,8 +104,8 @@ class SerbianTransportOptionsFlow(OptionsFlow):
             data_schema=vol.Schema(
                 {
                     vol.Required(
-                        "search_rad",
-                        default=self.config_entry.options.get("search_rad", 1000)
+                        CONF_SEARCH_RADIUS,
+                        default=self.config_entry.options.get(CONF_SEARCH_RADIUS, DEFAULT_SEARCH_RADIUS)
                     ): vol.All(
                         vol.Coerce(int),
                         vol.Range(min=100, max=20000)
