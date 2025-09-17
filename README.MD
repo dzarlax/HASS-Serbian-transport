@@ -5,6 +5,8 @@
 ![HACS](https://img.shields.io/badge/HACS-compatible-orange.svg)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1.0+-green.svg)
 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=dzarlax&repository=HASS-Serbian-transport&category=integration)
+
 Advanced Home Assistant integration for Serbian public transport with real-time arrivals, beautiful animations, and visual configuration.
 
 ## ✨ Features
@@ -30,7 +32,16 @@ Advanced Home Assistant integration for Serbian public transport with real-time 
 
 ## 📦 Installation
 
-### Via HACS (Recommended)
+### One-Click Installation (Easiest)
+Click the button below to automatically open HACS and install the integration:
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=dzarlax&repository=HASS-Serbian-transport&category=integration)
+
+After installation, add the integration to your Home Assistant:
+
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=serbian_transport)
+
+### Via HACS (Manual)
 1. Open HACS in Home Assistant
 2. Go to "Integrations"
 3. Click "Explore & Download Repositories"
@@ -145,6 +156,8 @@ This integration is part of the [City Dashboard](https://github.com/dzarlax/city
 ![HACS](https://img.shields.io/badge/HACS-kompatibilna-orange.svg)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1.0+-green.svg)
 
+[![Otvorite vašu Home Assistant instancu i dodajte repozitorijum u Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=dzarlax&repository=HASS-Serbian-transport&category=integration)
+
 Napredna Home Assistant integracija za srpski javni prevoz sa dolaskom u realnom vremenu, lepim animacijama i vizuelnom konfiguracijom.
 
 ## ✨ Funkcije
@@ -170,7 +183,16 @@ Napredna Home Assistant integracija za srpski javni prevoz sa dolaskom u realnom
 
 ## 📦 Instalacija
 
-### Preko HACS-a (Preporučeno)
+### Instalacija jednim klikom (Najlakše)
+Kliknite dugme ispod da automatski otvorite HACS i instalirate integraciju:
+
+[![Otvorite vašu Home Assistant instancu i dodajte repozitorijum u Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=dzarlax&repository=HASS-Serbian-transport&category=integration)
+
+Nakon instalacije, dodajte integraciju u vaš Home Assistant:
+
+[![Otvorite vašu Home Assistant instancu i počnite podešavanje nove integracije.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=serbian_transport)
+
+### Preko HACS-a (Ručno)
 1. Otvorite HACS u Home Assistant-u
 2. Idite na "Integracije"
 3. Kliknite "Istražite i preuzmite repozitorijume"
