@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/core/lit-core.min.js';
 
-// Transport Card v2.0.0 - Enhanced version with colors, expand/collapse and visual UI configuration
+// Transport Card v2.2.0 - Simplified version with animations, progress bars and visual UI configuration
 export class TransportCard extends LitElement {
   static get properties() {
     return {
@@ -57,6 +57,77 @@ export class TransportCard extends LitElement {
     .expand-button:hover {
       background: var(--divider-color);
     }
+
+    /* Animations and transitions */
+    .transport-group {
+      transition: all 0.3s ease;
+    }
+
+    .transport-group:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .stop-container {
+      transition: all 0.3s ease;
+    }
+
+    .stop-container:hover {
+      background: var(--secondary-background-color);
+    }
+
+    .arrival-time {
+      transition: all 0.2s ease;
+    }
+
+    .arrival-time:hover {
+      transform: scale(1.05);
+    }
+
+    /* Progress bars for arrival times */
+    .arrival-progress {
+      width: 100%;
+      height: 3px;
+      background: var(--divider-color);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 2px;
+    }
+
+    .arrival-progress-fill {
+      height: 100%;
+      transition: width 1s ease;
+      border-radius: 2px;
+    }
+
+    .arrival-progress-fill.urgent {
+      background: linear-gradient(90deg, var(--error-color), var(--warning-color));
+    }
+
+    .arrival-progress-fill.soon {
+      background: linear-gradient(90deg, var(--warning-color), var(--info-color));
+    }
+
+    .arrival-progress-fill.normal {
+      background: linear-gradient(90deg, var(--success-color), var(--primary-color));
+    }
+
+    .arrival-progress-fill.late {
+      background: linear-gradient(90deg, var(--primary-color), var(--secondary-text-color));
+    }
+
+    /* Arrival container */
+    .arrival-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-right: 8px;
+      margin-bottom: 4px;
+    }
+
+
+
+
     
     /* Next departure section */
     .next-departure {
@@ -314,6 +385,7 @@ export class TransportCard extends LitElement {
   }
 
 
+
   // Get next departure time from all stations
   getNextDeparture(stations) {
     let minTime = null;
@@ -344,6 +416,16 @@ export class TransportCard extends LitElement {
   // Toggle expanded view
   toggleExpanded() {
     this._expanded = !this._expanded;
+  }
+
+
+
+
+  // Get progress bar width for arrival time
+  getProgressBarWidth(minutes) {
+    const maxMinutes = 30; // Max time for full bar
+    const width = Math.max(0, Math.min(100, ((maxMinutes - minutes) / maxMinutes) * 100));
+    return width;
   }
 
   groupVehiclesByLine(vehicles) {
@@ -399,7 +481,7 @@ export class TransportCard extends LitElement {
     `;
   }
 
-  // Render expand/collapse button
+  // Render controls
   renderControls() {
     return html`
       <div class="controls">
@@ -418,7 +500,7 @@ export class TransportCard extends LitElement {
     const groups = this.groupVehiclesByLine(stop.vehicles);
     const hasData = stop.vehicles && stop.vehicles.length > 0;
     const statusClass = hasData ? 'online' : 'unknown';
-  
+
     return html`
       <div class="stop-item">
         <div class="stop-name">
@@ -444,10 +526,17 @@ export class TransportCard extends LitElement {
                   .map(({ seconds, stations }) => {
                     const minutes = Math.ceil(seconds / 60);
                     const timeClass = this.getArrivalTimeClass(minutes);
+                    const progressWidth = this.getProgressBarWidth(minutes);
+                    
                     return html`
-                      <span class="arrival-time ${timeClass}" title="${stations} stops">
-                        ${minutes} min${stations ? ` (${stations})` : ''}
-                      </span>
+                      <div class="arrival-container">
+                        <span class="arrival-time ${timeClass}" title="${stations} stops">
+                          ${minutes} min${stations ? ` (${stations})` : ''}
+                        </span>
+                        <div class="arrival-progress">
+                          <div class="arrival-progress-fill ${timeClass}" style="width: ${progressWidth}%"></div>
+                        </div>
+                      </div>
                     `;
                   })}
               </div>
@@ -505,7 +594,7 @@ export class TransportCard extends LitElement {
       `;
     }
 
-    // Apply limit
+    // Apply limit only
     const displayStops = allStops.slice(0, this._config.max_stations);
     const nextDeparture = this.getNextDeparture(allStops);
     
