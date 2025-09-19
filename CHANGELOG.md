@@ -1,4 +1,10 @@
 # Changelog
+## [v2.2.0] - 2025-09-19
+
+### ✨ Features
+- Refactor release workflow: improve changelog extraction using sed for better accuracy, add logging for fallback scenarios, and enhance handling of recent commits when no changelog content is found.
+
+
 ## [v2.1.0] - 2025-09-19
 
 ### ✨ Features

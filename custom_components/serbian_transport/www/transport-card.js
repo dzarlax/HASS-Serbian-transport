@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/core/lit-core.min.js';
 
-// Transport Card v2.1.0 - 2025-09-19
+// Transport Card v2.2.0 - 2025-09-19
 export class TransportCard extends LitElement {
   static get properties() {
     return {
