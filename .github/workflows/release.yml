@@ -119,29 +119,29 @@ jobs:
       run: |
         # Extract release notes from CHANGELOG.md for this version
         if [ -f "CHANGELOG.md" ]; then
-          # Get content between version header and next version or end of file
-          VERSION_PATTERN="## \[v${{ steps.version.outputs.version }}\]"
-          NEXT_VERSION_PATTERN="## \[v"
+          echo "Found CHANGELOG.md, extracting release notes for v${{ steps.version.outputs.version }}"
           
-          # Extract changelog section for current version
-          awk -v version="$VERSION_PATTERN" -v next="$NEXT_VERSION_PATTERN" '
-            $0 ~ version {found=1; next}
-            found && $0 ~ next {found=0}
-            found {print}
-          ' CHANGELOG.md > release_notes.tmp
+          # Use sed to extract content between version headers
+          sed -n "/^## \[v${{ steps.version.outputs.version }}\]/,/^## \[v/p" CHANGELOG.md | \
+          sed '$d' | \
+          tail -n +2 > release_notes.tmp
           
           # If we have content, use it; otherwise use default
           if [ -s release_notes.tmp ]; then
+            echo "Found changelog content for this version"
             echo "notes<<EOF" >> $GITHUB_OUTPUT
             cat release_notes.tmp >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           else
+            echo "No changelog content found for this version, using git log"
             # Fallback to git log
             LATEST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
             if [ -n "$LATEST_TAG" ]; then
               COMMITS=$(git log $LATEST_TAG..HEAD --pretty=format:"- %s" --max-count=20)
+              echo "Found commits since $LATEST_TAG"
             else
               COMMITS=$(git log --pretty=format:"- %s" --max-count=20)
+              echo "No previous tag found, using recent commits"
             fi
             
             echo "notes<<EOF" >> $GITHUB_OUTPUT
@@ -159,8 +159,10 @@ jobs:
           LATEST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
           if [ -n "$LATEST_TAG" ]; then
             COMMITS=$(git log $LATEST_TAG..HEAD --pretty=format:"- %s" --max-count=20)
+            echo "Found commits since $LATEST_TAG"
           else
             COMMITS=$(git log --pretty=format:"- %s" --max-count=20)
+            echo "No previous tag found, using recent commits"
           fi
           
           echo "notes<<EOF" >> $GITHUB_OUTPUT
