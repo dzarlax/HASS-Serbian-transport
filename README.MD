@@ -1,13 +1,26 @@
 
 # Serbian Transport Integration
 
-![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![HACS](https://img.shields.io/badge/HACS-compatible-orange.svg)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1.0+-green.svg)
+![Automated Releases](https://img.shields.io/badge/releases-automated-green.svg)
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=dzarlax&repository=HASS-Serbian-transport&category=integration)
 
-Advanced Home Assistant integration for Serbian public transport with real-time arrivals, beautiful animations, and visual configuration.
+Advanced Home Assistant integration for Serbian public transport with real-time arrivals, beautiful animations, visual configuration, and intelligent station selection.
+
+## 📸 Screenshots
+
+### Main Interface
+- **🎯 Station Selection Dropdown** - Easily choose which stations to monitor
+- **📊 Real-time Arrivals** - Color-coded departure times with progress indicators
+- **🎨 Modern UI** - Clean, responsive design that works on all devices
+
+### Configuration Interface
+- **⚙️ Visual Editor** - No YAML required, configure everything through the UI
+- **🔧 Smart Defaults** - Automatically detects nearby stations based on your location
+- **📱 Mobile Optimized** - Perfect for Home Assistant Companion app
 
 ## ✨ Features
 
@@ -19,11 +32,12 @@ Advanced Home Assistant integration for Serbian public transport with real-time 
 - 📱 **Responsive design** - Works perfectly on mobile and desktop
 
 ### Advanced Features
-- 🎯 **Next departure highlighting** - Shows the soonest arrival across all stops
+- 🎯 **Intelligent station selection** - Choose specific stations to display with dropdown interface
 - 📊 **Progress bars** - Visual time indicators with color coding
 - 🔄 **Expandable view** - Compact/expanded modes for different use cases
 - 🎭 **Smooth animations** - Hover effects and transitions for modern UX
-- 🔧 **Migration support** - Seamless updates from older versions
+- 🔧 **Automated versioning** - Continuous delivery with automated releases and changelog
+- ⚡ **Smart caching** - Optimized data fetching with error handling
 
 ## 🏙️ Supported Cities
 - **Belgrade** (GSP Belgrade)
@@ -72,6 +86,7 @@ After installation, add the integration to your Home Assistant:
 3. Configure using the visual editor:
    - **Entity**: Select your transport sensor
    - **Title**: Custom card title
+   - **Station Selection**: Choose specific stations to display (dropdown interface)
    - **Max Stations**: Number of stations to display (1-50)
    - **Show Next Departure**: Toggle next departure section
    - **Compact View**: Default view mode
@@ -82,6 +97,7 @@ After installation, add the integration to your Home Assistant:
 type: custom:transport-card
 entity: sensor.serbian_transport_stations_count
 title: "Serbian Transport"
+selected_stations: ["Trg Republike", "Autokomanda", "Zeleni Venac"]  # Optional: specific stations
 show_next_departure: true
 compact_view: false
 max_stations: 10
@@ -94,6 +110,7 @@ refresh_interval: 30
 |--------|------|---------|-------------|
 | `entity` | string | **required** | Transport sensor entity ID |
 | `title` | string | `"Serbian Transport"` | Card title |
+| `selected_stations` | array | `[]` | List of specific station names to display (optional) |
 | `show_next_departure` | boolean | `true` | Show next departure section |
 | `compact_view` | boolean | `false` | Use compact layout by default |
 | `max_stations` | number | `10` | Maximum stations to display (1-50) |
@@ -108,10 +125,26 @@ refresh_interval: 30
 - 🔵 **Late** (>15 min) - Blue gradient
 
 ### Interactive Elements
+- **Station selection dropdown** - Choose specific stations to monitor
 - **Hover effects** on transport groups
 - **Expandable/collapsible** view with animation
 - **Progress bars** showing time until arrival
 - **Status indicators** for station data availability
+- **Smart filtering** - Show only selected stations or all nearby stations
+
+## 🆕 What's New in v2.4.0
+
+### 🎯 Station Selection Dropdown
+- **Intelligent filtering** - Choose exactly which stations you want to monitor
+- **Distance indicators** - See how far each station is from your location
+- **"All stations" option** - Toggle between filtered and complete view
+- **Persistent selection** - Your choices are saved and restored
+
+### 🚀 Automated Development
+- **Continuous delivery** - Automatic releases with every feature addition
+- **Smart versioning** - Semantic versions based on commit types
+- **Auto-generated changelogs** - Beautiful release notes from commit messages
+- **HACS integration** - Seamless updates through Home Assistant Community Store
 
 ## 🔧 Troubleshooting
 
@@ -143,22 +176,53 @@ This integration is part of the [City Dashboard](https://github.com/dzarlax/city
 - **Production**: `https://transport-api.dzarlax.dev`
 - **Fallback cities**: Belgrade (`bg`), Novi Sad (`ns`), Niš (`nis`)
 
+## 🚀 Development & Releases
+
+This integration features **automated versioning** with continuous delivery:
+
+- 🤖 **Automated releases** via GitHub Actions
+- 📝 **Auto-generated changelogs** from commit messages
+- 🏷️ **Semantic versioning** based on conventional commits
+- 📦 **HACS compatibility** with automatic updates
+
+### Contributing
+- Use [Conventional Commits](https://conventionalcommits.org/) for commit messages
+- `feat:` for new features (minor version bump)
+- `fix:` for bug fixes (patch version bump)
+- `BREAKING:` for breaking changes (major version bump)
+
 ### Version History
-- **v2.2.0**: Simplified interface, removed complex filtering
-- **v2.1.x**: Advanced features with sorting and favorites
+See [CHANGELOG.md](CHANGELOG.md) for complete version history.
+
+Recent releases:
+- **v2.4.0**: Station selection with dropdown interface, automated versioning
+- **v2.3.0**: Enhanced UI with improved error handling
 - **v2.0.0**: Major rewrite with visual configuration
 - **v1.x**: Initial release with basic functionality
 
 
 # Srpski Transport Integracija
 
-![Verzija](https://img.shields.io/badge/verzija-2.2.0-blue.svg)
+![Verzija](https://img.shields.io/badge/verzija-2.0.0-blue.svg)
 ![HACS](https://img.shields.io/badge/HACS-kompatibilna-orange.svg)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1.0+-green.svg)
+![Automatski Relizi](https://img.shields.io/badge/relizi-automatski-green.svg)
 
 [![Otvorite vašu Home Assistant instancu i dodajte repozitorijum u Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=dzarlax&repository=HASS-Serbian-transport&category=integration)
 
-Napredna Home Assistant integracija za srpski javni prevoz sa dolaskom u realnom vremenu, lepim animacijama i vizuelnom konfiguracijom.
+Napredna Home Assistant integracija za srpski javni prevoz sa dolaskom u realnom vremenu, lepim animacijama, vizuelnom konfiguracijom i inteligentnim izborom stanica.
+
+## 📸 Snimci ekrana
+
+### Glavni interfejs
+- **🎯 Dropdown za izbor stanica** - Lako birate koje stanice želite da pratite
+- **📊 Dolasci u realnom vremenu** - Vremena polaska označena bojama sa indikatorima napretka
+- **🎨 Moderan UI** - Čist, responsive dizajn koji radi na svim uređajima
+
+### Interfejs za konfiguraciju
+- **⚙️ Vizuelni editor** - YAML nije potreban, konfiguriše se sve kroz UI
+- **🔧 Pametni default-ovi** - Automatski otkriva obližnje stanice na osnovu vaše lokacije
+- **📱 Optimizovano za mobilne** - Savršeno za Home Assistant Companion aplikaciju
 
 ## ✨ Funkcije
 
@@ -170,11 +234,12 @@ Napredna Home Assistant integracija za srpski javni prevoz sa dolaskom u realnom
 - 📱 **Responsive dizajn** - Savršeno radi na mobilnim uređajima i desktopima
 
 ### Napredne funkcije  
-- 🎯 **Označavanje sledećeg polaska** - Prikazuje najraniji dolazak preko svih stanica
+- 🎯 **Inteligentni izbor stanica** - Biraju se specifične stanice za prikaz sa dropdown interfejsom
 - 📊 **Trake napretka** - Vizuelni indikatori vremena sa kodiranjem u boji
 - 🔄 **Proširiv prikaz** - Kompaktni/prošireni režimi za različite slučajeve korišćenja
 - 🎭 **Glatke animacije** - Hover efekti i prelazi za moderan UX
-- 🔧 **Podrška za migraciju** - Besprekorne nadogradnje sa starijih verzija
+- 🔧 **Automatsko verzioniranje** - Kontinuirano dostavljanje sa automatskim relizima i changelog-om
+- ⚡ **Pametno keširanje** - Optimizovano preuzimanje podataka sa rukovanjem greškama
 
 ## 🏙️ Podržani gradovi
 - **Beograd** (GSP Beograd)
@@ -223,6 +288,7 @@ Nakon instalacije, dodajte integraciju u vaš Home Assistant:
 3. Konfigurišite koristeći vizuelni editor:
    - **Entity**: Izaberite vaš transport senzor
    - **Title**: Prilagođeni naslov kartice
+   - **Station Selection**: Izaberite specifične stanice za prikaz (dropdown interfejs)
    - **Max Stations**: Broj stanica za prikaz (1-50)
    - **Show Next Departure**: Uključi/isključi sekciju sledećeg polaska
    - **Compact View**: Podrazumevani režim prikaza
@@ -233,6 +299,7 @@ Nakon instalacije, dodajte integraciju u vaš Home Assistant:
 type: custom:transport-card
 entity: sensor.serbian_transport_stations_count
 title: "Serbian Transport"
+selected_stations: ["Trg Republike", "Autokomanda", "Zeleni Venac"]  # Opciono: specifične stanice
 show_next_departure: true
 compact_view: false
 max_stations: 10
@@ -245,6 +312,7 @@ refresh_interval: 30
 |--------|-----|---------------|------|
 | `entity` | string | **obavezno** | ID transport senzor entiteta |
 | `title` | string | `"Serbian Transport"` | Naslov kartice |
+| `selected_stations` | array | `[]` | Lista specifičnih imena stanica za prikaz (opciono) |
 | `show_next_departure` | boolean | `true` | Prikaži sekciju sledećeg polaska |
 | `compact_view` | boolean | `false` | Koristi kompaktni layout po default-u |
 | `max_stations` | number | `10` | Maksimalno stanica za prikaz (1-50) |
@@ -259,10 +327,26 @@ refresh_interval: 30
 - 🔵 **Kasno** (>15 min) - Plavi gradijent
 
 ### Interaktivni elementi
+- **Dropdown za izbor stanica** - Biraju se specifične stanice za praćenje
 - **Hover efekti** na transport grupama
 - **Proširiv/sklopiv** prikaz sa animacijom
 - **Trake napretka** koje prikazuju vreme do dolaska
 - **Status indikatori** za dostupnost podataka stanice
+- **Pametno filtriranje** - Prikaži samo izabrane stanice ili sve bliske stanice
+
+## 🆕 Šta je novo u v2.4.0
+
+### 🎯 Dropdown za izbor stanica
+- **Inteligentno filtriranje** - Birate tačno koje stanice želite da pratite
+- **Indikatori udaljenosti** - Vidite koliko je daleko svaka stanica od vaše lokacije
+- **Opcija "Sve stanice"** - Prebacivanje između filtriranog i kompletnog prikaza
+- **Perzistentni izbor** - Vaši izbori se čuvaju i vraćaju
+
+### 🚀 Automatizovan razvoj
+- **Kontinuirano dostavljanje** - Automatski relizi sa svakim dodavanjem funkcije
+- **Pametno verzioniranje** - Semantičke verzije na osnovu tipova commit-a
+- **Automatski generisani changelog-ovi** - Lepe release note iz commit poruka
+- **HACS integracija** - Besprekorna ažuriranja kroz Home Assistant Community Store
 
 ## 🔧 Rešavanje problema
 
@@ -294,9 +378,27 @@ Ova integracija je deo [City Dashboard](https://github.com/dzarlax/city-dashboar
 - **Produkcija**: `https://transport-api.dzarlax.dev`
 - **Fallback gradovi**: Beograd (`bg`), Novi Sad (`ns`), Niš (`nis`)
 
+## 🚀 Razvoj i Relizi
+
+Ova integracija ima **automatsko verzioniranje** sa kontinuiranim dostavljanjem:
+
+- 🤖 **Automatski relizi** preko GitHub Actions
+- 📝 **Automatski generisan changelog** iz commit poruka
+- 🏷️ **Semantičko verzioniranje** bazirano na konvencionalnim commit-ima
+- 📦 **HACS kompatibilnost** sa automatskim ažuriranjima
+
+### Doprinošenje
+- Koristite [Konvencionalne Commit-e](https://conventionalcommits.org/) za commit poruke
+- `feat:` za nove funkcije (minor verzija)
+- `fix:` za popravke grešaka (patch verzija)
+- `BREAKING:` za prekidajuće promene (major verzija)
+
 ### Istorija verzija
-- **v2.2.0**: Uprošćen interfejs, uklonjeno složeno filtriranje
-- **v2.1.x**: Napredne funkcije sa sortiranjem i omiljenim
+Pogledajte [CHANGELOG.md](CHANGELOG.md) za kompletnu istoriju verzija.
+
+Nedavni relizi:
+- **v2.4.0**: Izbor stanica sa dropdown interfejsom, automatsko verzioniranje
+- **v2.3.0**: Poboljšan UI sa proračunavanjem grešaka
 - **v2.0.0**: Velika prepravka sa vizuelnom konfiguracijom
 - **v1.x**: Početno izdanje sa osnovnim funkcionalnostima
 

@@ -1,0 +1,191 @@
+name: Release Management
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version increment type'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+        - auto
+        - patch
+        - minor
+        - major
+
+jobs:
+  version-check:
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+      new_version: ${{ steps.check.outputs.new_version }}
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Make version script executable
+      run: chmod +x scripts/version_manager.py
+    
+    - name: Check if release needed
+      id: check
+      run: |
+        if [ "${{ github.event.inputs.version_type }}" != "" ]; then
+          # Manual trigger
+          echo "should_release=true" >> $GITHUB_OUTPUT
+          if [ "${{ github.event.inputs.version_type }}" = "auto" ]; then
+            NEW_VERSION=$(python3 scripts/version_manager.py bump --dry-run)
+          else
+            NEW_VERSION=$(python3 scripts/version_manager.py bump --type ${{ github.event.inputs.version_type }} --dry-run)
+          fi
+        else
+          # Auto trigger - check for new commits
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          COMMITS_SINCE=$(git rev-list $LATEST_TAG..HEAD --count)
+          
+          if [ $COMMITS_SINCE -gt 0 ]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            NEW_VERSION=$(python3 scripts/version_manager.py bump --dry-run)
+          else
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            NEW_VERSION=$(python3 scripts/version_manager.py show --version-only)
+          fi
+        fi
+        
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "New version would be: $NEW_VERSION"
+
+  release:
+    needs: version-check
+    if: needs.version-check.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Configure Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+    
+    - name: Update version and create changelog
+      run: |
+        chmod +x scripts/version_manager.py
+        
+        if [ "${{ github.event.inputs.version_type }}" != "" ] && [ "${{ github.event.inputs.version_type }}" != "auto" ]; then
+          python3 scripts/version_manager.py bump --type ${{ github.event.inputs.version_type }}
+        else
+          python3 scripts/version_manager.py bump
+        fi
+    
+    - name: Get new version
+      id: version
+      run: |
+        NEW_VERSION=$(python3 scripts/version_manager.py show --version-only)
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $NEW_VERSION"
+    
+    - name: Commit version changes
+      run: |
+        git add .
+        git commit -m "chore: bump version to v${{ steps.version.outputs.version }} [skip ci]" || echo "No changes to commit"
+    
+    - name: Create and push tag
+      run: |
+        git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
+        git push origin main
+        git push origin "v${{ steps.version.outputs.version }}"
+    
+    - name: Generate release notes from CHANGELOG
+      id: release_notes
+      run: |
+        # Extract release notes from CHANGELOG.md for this version
+        if [ -f "CHANGELOG.md" ]; then
+          # Get content between version header and next version or end of file
+          VERSION_PATTERN="## \[v${{ steps.version.outputs.version }}\]"
+          NEXT_VERSION_PATTERN="## \[v"
+          
+          # Extract changelog section for current version
+          awk -v version="$VERSION_PATTERN" -v next="$NEXT_VERSION_PATTERN" '
+            $0 ~ version {found=1; next}
+            found && $0 ~ next {found=0}
+            found {print}
+          ' CHANGELOG.md > release_notes.tmp
+          
+          # If we have content, use it; otherwise use default
+          if [ -s release_notes.tmp ]; then
+            echo "notes<<EOF" >> $GITHUB_OUTPUT
+            cat release_notes.tmp >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            # Fallback to git log
+            LATEST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            if [ -n "$LATEST_TAG" ]; then
+              COMMITS=$(git log $LATEST_TAG..HEAD --pretty=format:"- %s" --max-count=20)
+            else
+              COMMITS=$(git log --pretty=format:"- %s" --max-count=20)
+            fi
+            
+            echo "notes<<EOF" >> $GITHUB_OUTPUT
+            echo "## What's Changed" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "$COMMITS" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/$LATEST_TAG...v${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+          
+          rm -f release_notes.tmp
+        else
+          echo "No CHANGELOG.md found, using git log"
+          LATEST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$LATEST_TAG" ]; then
+            COMMITS=$(git log $LATEST_TAG..HEAD --pretty=format:"- %s" --max-count=20)
+          else
+            COMMITS=$(git log --pretty=format:"- %s" --max-count=20)
+          fi
+          
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "## What's Changed" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/$LATEST_TAG...v${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.version.outputs.version }}
+        name: Serbian Transport v${{ steps.version.outputs.version }}
+        body: ${{ steps.release_notes.outputs.notes }}
+        draft: false
+        prerelease: false
+    
+    - name: Update HACS repository
+      if: success()
+      run: |
+        echo "✅ Release v${{ steps.version.outputs.version }} created successfully!"
+        echo "🏠 HACS will automatically detect the new release"
+        echo "📋 Changelog updated in CHANGELOG.md"
