@@ -38,9 +38,27 @@ class TransportStationsCoordinator(DataUpdateCoordinator):
         self.lon = lon
         self.rad = rad
 
+    @property
+    def station_count(self) -> int:
+        """Return the number of stations."""
+        if self.data:
+            return len(self.data)
+        return 0
+
+    @property
+    def has_data(self) -> bool:
+        """Return True if we have data."""
+        return self.data is not None and len(self.data) > 0
+
     async def _async_update_data(self):
         """Функция, которую вызывает HA для обновления данных."""
-        # Здесь пишем логику обращения к API
-        async with aiohttp.ClientSession() as session:
-            stations = await fetch_stations(session, self.lat, self.lon, self.rad)
-            return stations
+        _LOGGER.debug(f"Fetching transport data for coordinates ({self.lat}, {self.lon}) with radius {self.rad}m")
+        try:
+            # Здесь пишем логику обращения к API
+            async with aiohttp.ClientSession() as session:
+                stations = await fetch_stations(session, self.lat, self.lon, self.rad)
+                _LOGGER.debug(f"Successfully fetched {len(stations) if stations else 0} stations")
+                return stations
+        except Exception as e:
+            _LOGGER.error(f"Error fetching transport data: {e}")
+            raise

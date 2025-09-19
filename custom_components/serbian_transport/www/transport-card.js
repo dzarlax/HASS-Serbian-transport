@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/core/lit-core.min.js';
 
-// Transport Card v2.2.0 - Simplified version with animations, progress bars and visual UI configuration
+// Transport Card v2.4.0 - Station selection with dropdown interface
 export class TransportCard extends LitElement {
   static get properties() {
     return {
@@ -371,6 +371,7 @@ export class TransportCard extends LitElement {
       compact_view: config.compact_view || false,
       max_stations: config.max_stations || 10,
       refresh_interval: config.refresh_interval || 30,
+      selected_stations: config.selected_stations || [], // Array of station IDs to display
       ...config
     };
     this._showNextDeparture = this._config.show_next_departure;
@@ -579,7 +580,17 @@ export class TransportCard extends LitElement {
 
     const attr = entityState.attributes || {};
     const allStops = attr.stations || [];
-    const isLoading = entityState.state === 'unavailable';
+    const isLoading = entityState.state === 'unavailable' || entityState.state === 'unknown';
+    const hasNoStations = allStops.length === 0;
+    
+    // Debug info
+    console.log('Transport card render debug:', {
+      entityState: entityState.state,
+      isLoading,
+      hasNoStations,
+      stationsCount: allStops.length,
+      attributes: Object.keys(attr)
+    });
     
     if (isLoading) {
       return html`
@@ -588,15 +599,44 @@ export class TransportCard extends LitElement {
             <div class="loading">
               <ha-icon icon="mdi:loading"></ha-icon>
               Loading transport data...
+              <div style="font-size: 0.8em; margin-top: 8px;">
+                Entity state: ${entityState.state}
+              </div>
             </div>
           </div>
         </ha-card>
       `;
     }
 
-    // Apply limit only
-    const displayStops = allStops.slice(0, this._config.max_stations);
-    const nextDeparture = this.getNextDeparture(allStops);
+    if (hasNoStations && entityState.state !== 'unknown') {
+      return html`
+        <ha-card>
+          <div class="card">
+            <div class="no-data">
+              <ha-icon icon="mdi:alert-circle"></ha-icon>
+              <div>No transport stations found</div>
+              <div style="font-size: 0.8em; margin-top: 8px;">
+                Entity state: ${entityState.state}<br>
+                Check if your coordinates and radius are correct
+              </div>
+            </div>
+          </div>
+        </ha-card>
+      `;
+    }
+
+    // Filter stations based on selected_stations config
+    let filteredStops = allStops;
+    if (this._config.selected_stations && this._config.selected_stations.length > 0) {
+      filteredStops = allStops.filter(station => 
+        this._config.selected_stations.includes(station.stopId?.toString()) ||
+        this._config.selected_stations.includes(station.stopId)
+      );
+    }
+    
+    // Apply limit
+    const displayStops = filteredStops.slice(0, this._config.max_stations);
+    const nextDeparture = this.getNextDeparture(filteredStops);
     
     const cardClass = this._config.compact_view || !this._expanded ? 'compact' : '';
 
@@ -645,7 +685,8 @@ export class TransportCard extends LitElement {
       show_next_departure: true,
       compact_view: false,
       max_stations: 10,
-      refresh_interval: 30
+      refresh_interval: 30,
+      selected_stations: []
     };
   }
 }
@@ -656,13 +697,17 @@ class TransportCardEditor extends LitElement {
     return {
       hass: { type: Object },
       _config: { state: true },
-      _entities: { state: true }
+      _entities: { state: true },
+      _availableStations: { state: true },
+      _dropdownOpen: { state: true }
     };
   }
 
   constructor() {
     super();
     this._entities = [];
+    this._availableStations = [];
+    this._dropdownOpen = false;
   }
 
   static styles = css`
@@ -719,6 +764,132 @@ class TransportCardEditor extends LitElement {
       color: var(--secondary-text-color);
       margin-top: 4px;
     }
+
+    .station-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--divider-color);
+      border-radius: 4px;
+      padding: 8px;
+      background: var(--secondary-background-color);
+    }
+
+    .station-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+
+    .station-option:hover {
+      background: var(--divider-color);
+    }
+
+    .station-option label {
+      flex: 1;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    .station-option ha-checkbox {
+      --mdc-theme-secondary: var(--primary-color);
+    }
+
+    /* Dropdown styles */
+    .station-dropdown-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .dropdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border: 1px solid var(--divider-color);
+      border-radius: 4px;
+      background: var(--card-background-color);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dropdown-header:hover {
+      background: var(--secondary-background-color);
+    }
+
+    .dropdown-text {
+      flex: 1;
+      font-size: 0.9em;
+    }
+
+    .dropdown-icon {
+      transition: transform 0.2s;
+      --mdc-icon-size: 20px;
+    }
+
+    .dropdown-icon.open {
+      transform: rotate(180deg);
+    }
+
+    .dropdown-content {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--card-background-color);
+      border: 1px solid var(--divider-color);
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .dropdown-content.open {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .dropdown-item:hover {
+      background: var(--secondary-background-color);
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: var(--divider-color);
+      margin: 4px 0;
+    }
+
+    .station-info {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .station-name {
+      font-size: 0.9em;
+    }
+
+    .station-distance {
+      font-size: 0.8em;
+      color: var(--secondary-text-color);
+    }
   `;
 
   setConfig(config) {
@@ -730,6 +901,52 @@ class TransportCardEditor extends LitElement {
       this._entities = Object.keys(this.hass.states)
         .filter(entityId => entityId.startsWith('sensor.'))
         .sort();
+      
+      // Update available stations when entity changes
+      this._updateAvailableStations();
+    }
+    
+    if (changedProperties.has('_config') && this._config?.entity) {
+      this._updateAvailableStations();
+    }
+  }
+
+  _updateAvailableStations() {
+    console.log('Updating available stations...', {
+      hasHass: !!this.hass,
+      hasEntity: !!this._config?.entity,
+      entity: this._config?.entity
+    });
+
+    if (!this.hass || !this._config?.entity) {
+      this._availableStations = [];
+      console.log('No hass or entity, clearing stations');
+      return;
+    }
+
+    const entityState = this.hass.states[this._config.entity];
+    console.log('Entity state:', entityState);
+    
+    if (entityState?.attributes?.stations) {
+      const stations = entityState.attributes.stations;
+      console.log('Found stations:', stations.length, stations);
+      
+      this._availableStations = stations.map(station => ({
+        id: station.stopId?.toString() || station.stopId,
+        name: station.name || `Station ${station.stopId}`,
+        distance: station.distance ? Math.round(station.distance) : null
+      })).sort((a, b) => {
+        // Sort by distance if available, otherwise by name
+        if (a.distance !== null && b.distance !== null) {
+          return a.distance - b.distance;
+        }
+        return a.name.localeCompare(b.name);
+      });
+      
+      console.log('Processed stations:', this._availableStations);
+    } else {
+      this._availableStations = [];
+      console.log('No stations in entity attributes');
     }
   }
 
@@ -760,11 +977,74 @@ class TransportCardEditor extends LitElement {
       bubbles: true,
       composed: true
     }));
+
+    // If entity changed, update available stations
+    if (configKey === 'entity') {
+      setTimeout(() => {
+        this._updateAvailableStations();
+        this.requestUpdate();
+      }, 100);
+    }
+  }
+
+
+
+  _toggleStationById(stationId) {
+    let selectedStations = [...(this._config.selected_stations || [])];
+    
+    if (selectedStations.includes(stationId)) {
+      selectedStations = selectedStations.filter(id => id !== stationId);
+    } else {
+      selectedStations.push(stationId);
+    }
+    
+    const newConfig = {
+      ...this._config,
+      selected_stations: selectedStations
+    };
+
+    this.dispatchEvent(new CustomEvent('config-changed', {
+      detail: { config: newConfig },
+      bubbles: true,
+      composed: true
+    }));
+
+    // Keep dropdown open for multiple selections
+  }
+
+  _refreshStations() {
+    console.log('Refreshing stations data...');
+    this._updateAvailableStations();
+    this.requestUpdate();
+  }
+
+  _toggleDropdown() {
+    this._dropdownOpen = !this._dropdownOpen;
+  }
+
+  _selectAllStations() {
+    // If no stations are selected (all stations mode), do nothing
+    // If some/all stations are selected, clear selection (return to all stations mode)
+    const newConfig = {
+      ...this._config,
+      selected_stations: []
+    };
+
+    this.dispatchEvent(new CustomEvent('config-changed', {
+      detail: { config: newConfig },
+      bubbles: true,
+      composed: true
+    }));
   }
 
   render() {
     if (!this.hass || !this._config) {
       return html`<div>Loading...</div>`;
+    }
+
+    // Ensure stations are updated on render
+    if (this._config.entity && this._availableStations.length === 0) {
+      setTimeout(() => this._updateAvailableStations(), 100);
     }
 
     return html`
@@ -829,6 +1109,60 @@ class TransportCardEditor extends LitElement {
             ></ha-textfield>
           </div>
           <div class="help-text">Data refresh interval in seconds (10-300)</div>
+        </div>
+
+        <!-- Station Selection -->
+        <div class="config-section">
+          <div class="section-header">Station Selection</div>
+          
+          ${this._availableStations.length > 0 ? html`
+            <div class="config-row">
+              <label class="config-label">Selected Stations</label>
+              <div class="station-dropdown-container">
+                <div class="dropdown-header" @click=${this._toggleDropdown}>
+                  <span class="dropdown-text">
+                    ${(this._config.selected_stations || []).length === 0 
+                      ? 'All stations (click to select specific)' 
+                      : `${(this._config.selected_stations || []).length} station(s) selected`}
+                  </span>
+                  <ha-icon icon="mdi:chevron-down" class="dropdown-icon ${this._dropdownOpen ? 'open' : ''}"></ha-icon>
+                </div>
+                
+                <div class="dropdown-content ${this._dropdownOpen ? 'open' : ''}">
+                  <div class="dropdown-item" @click=${this._selectAllStations}>
+                    <ha-checkbox 
+                      .checked=${(this._config.selected_stations || []).length === 0}
+                      .indeterminate=${(this._config.selected_stations || []).length > 0 && (this._config.selected_stations || []).length < this._availableStations.length}
+                    ></ha-checkbox>
+                    <span>All stations</span>
+                  </div>
+                  <div class="dropdown-divider"></div>
+                  ${this._availableStations.map(station => html`
+                    <div class="dropdown-item" @click=${() => this._toggleStationById(station.id)}>
+                      <ha-checkbox
+                        .checked=${(this._config.selected_stations || []).includes(station.id)}
+                      ></ha-checkbox>
+                      <span class="station-info">
+                        <span class="station-name">${station.name}</span>
+                        <span class="station-distance">${station.distance !== null ? `${station.distance}m` : ''}</span>
+                      </span>
+                    </div>
+                  `)}
+                </div>
+              </div>
+            </div>
+            <div class="help-text">
+              Select specific stations to display or choose "All stations" to show everything.
+            </div>
+          ` : html`
+            <div class="config-row">
+              <div class="help-text">
+                ${this._config.entity 
+                  ? `No stations available from selected entity. Please check if the entity has data.` 
+                  : 'Please select an entity first to see available stations.'}
+              </div>
+            </div>
+          `}
         </div>
 
         <!-- Features -->
